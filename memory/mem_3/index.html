@@ -1,0 +1,953 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Differenz 1 oder 2 - Multiplayer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4c1d95 0%, #1e3a8a 50%, #312e81 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .card-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .btn {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            padding: 18px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn.secondary {
+            background: #6b7280;
+        }
+
+        .btn.secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn.danger {
+            background: #ef4444;
+        }
+
+        .btn.danger:hover {
+            background: #dc2626;
+        }
+
+        .btn.success {
+            background: #22c55e;
+        }
+
+        .btn.success:hover {
+            background: #16a34a;
+        }
+
+        .input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 1rem;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .lobby-code {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 8px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .players-list {
+            margin: 20px 0;
+        }
+
+        .player-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .player-credits {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 15px;
+            border-radius: 8px;
+        }
+
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #2563eb;
+            color: #2563eb;
+        }
+
+        .card:not(.revealed):hover {
+            background: #3b82f6;
+            transform: scale(1.05);
+        }
+
+        .card.revealed {
+            background: white;
+            color: #1f2937;
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.selected-win {
+            background: #22c55e;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.5);
+        }
+
+        .card.selected-lose {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.5);
+        }
+
+        .game-header {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .credits-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .message.win {
+            background: #22c55e;
+        }
+
+        .message.lose {
+            background: #ef4444;
+        }
+
+        .leaderboard {
+            margin-top: 20px;
+        }
+
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 30px 0;
+            gap: 10px;
+        }
+
+        .podium-place {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .podium-place.first {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            order: 2;
+            height: 180px;
+            font-size: 1.3rem;
+        }
+
+        .podium-place.second {
+            background: linear-gradient(135deg, #9ca3af, #6b7280);
+            order: 1;
+            height: 140px;
+            font-size: 1.1rem;
+        }
+
+        .podium-place.third {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            order: 3;
+            height: 100px;
+        }
+
+        .place-number {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .info-text {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .host-timer {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="startScreen" class="screen active">
+            <div class="header">
+                <h1>Differenz 1 oder 2</h1>
+                <p>Multiplayer Kartenspiel</p>
+            </div>
+            <div class="card-panel">
+                <button class="btn" onclick="createLobby()">Lobby erstellen (Host)</button>
+                <button class="btn secondary" onclick="showJoinScreen()">Lobby beitreten</button>
+            </div>
+        </div>
+
+        <!-- Join Screen -->
+        <div id="joinScreen" class="screen">
+            <div class="header">
+                <h1>Lobby beitreten</h1>
+            </div>
+            <div class="card-panel">
+                <input type="text" id="playerNameInput" class="input" placeholder="Dein Name" maxlength="20">
+                <input type="text" id="lobbyCodeInput" class="input" placeholder="Lobby Code (4 Zeichen)" maxlength="4" style="text-transform: uppercase;">
+                <button class="btn" onclick="joinLobby()">Beitreten</button>
+                <button class="btn secondary" onclick="showStartScreen()">Zurück</button>
+            </div>
+        </div>
+
+        <!-- Host Lobby Screen -->
+        <div id="hostLobbyScreen" class="screen">
+            <div class="header">
+                <h1>Lobby</h1>
+            </div>
+            <div class="card-panel">
+                <div class="lobby-code" id="hostLobbyCode"></div>
+                <div id="qrcode"></div>
+                <p class="info-text">Spieler scannen den QR-Code oder geben den Code ein</p>
+                <div class="players-list" id="hostPlayersList"></div>
+                <button class="btn success" id="startGameBtn" onclick="startGame()" disabled>Spiel starten (3 Min)</button>
+                <button class="btn danger" onclick="closeLobby()">Lobby schließen</button>
+            </div>
+        </div>
+
+        <!-- Host Game Monitor -->
+        <div id="hostGameScreen" class="screen">
+            <div class="header">
+                <h1>Spiel läuft...</h1>
+            </div>
+            <div class="card-panel">
+                <div class="host-timer" id="hostTimer">3:00</div>
+                <div class="players-list" id="hostGamePlayersList"></div>
+            </div>
+        </div>
+
+        <!-- Player Lobby Screen -->
+        <div id="playerLobbyScreen" class="screen">
+            <div class="header">
+                <h1>Warte auf Start...</h1>
+            </div>
+            <div class="card-panel">
+                <div class="lobby-code" id="playerLobbyCode"></div>
+                <p class="info-text">Du bist in der Lobby. Warte auf den Host.</p>
+                <div class="players-list" id="playerPlayersList"></div>
+                <button class="btn danger" onclick="leaveLobby()">Lobby verlassen</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <div>
+                    <div style="font-size: 1rem; opacity: 0.9;">Spieler</div>
+                    <div style="font-size: 1.2rem; font-weight: bold;" id="gamePlayerName"></div>
+                </div>
+                <div>
+                    <div style="font-size: 1rem; opacity: 0.9;">Credits</div>
+                    <div class="credits-display" id="gameCredits">20</div>
+                </div>
+            </div>
+            <div class="timer" id="timer">3:00</div>
+            <div id="gameMessage" class="message" style="display: none;"></div>
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="screen">
+            <div class="header">
+                <h1>🏆 Spiel beendet!</h1>
+            </div>
+            <div class="card-panel">
+                <div class="podium" id="podium"></div>
+                <div class="leaderboard">
+                    <h2 style="text-align: center; margin-bottom: 20px;">Rangliste</h2>
+                    <div id="fullLeaderboard"></div>
+                </div>
+                <button class="btn" onclick="showStartScreen()">Neues Spiel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'api.php';
+
+        let gameState = {
+            role: null,
+            lobbyCode: null,
+            playerName: null,
+            playerId: null,
+            players: {},
+            gameStarted: false,
+            gameEnded: false,
+            timeRemaining: 180,
+            timerInterval: null,
+            cards: [],
+            selected: [],
+            revealed: [],
+            credits: 20,
+            lastWon: null,
+            lastSelected: []
+        };
+
+        // API calls
+        async function apiCall(action, data = {}) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action, ...data })
+                });
+                return await response.json();
+            } catch (err) {
+                console.error('API Error:', err);
+                return { success: false, error: err.message };
+            }
+        }
+
+        function generateLobbyCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        async function createLobby() {
+            gameState.role = 'host';
+            gameState.lobbyCode = generateLobbyCode();
+            gameState.playerId = 'host_' + Date.now();
+            gameState.players = {};
+
+            const result = await apiCall('createLobby', {
+                lobbyCode: gameState.lobbyCode,
+                hostId: gameState.playerId
+            });
+
+            if (result.success) {
+                showHostLobby();
+                startPolling();
+            } else {
+                alert('Fehler beim Erstellen der Lobby');
+            }
+        }
+
+        function showHostLobby() {
+            document.getElementById('hostLobbyCode').textContent = gameState.lobbyCode;
+            
+            document.getElementById('qrcode').innerHTML = '';
+            const qrData = window.location.href.split('?')[0] + '?join=' + gameState.lobbyCode;
+            new QRCode(document.getElementById('qrcode'), {
+                text: qrData,
+                width: 200,
+                height: 200
+            });
+
+            showScreen('hostLobbyScreen');
+            updatePlayersList();
+        }
+
+        function showJoinScreen() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const joinCode = urlParams.get('join');
+            if (joinCode) {
+                document.getElementById('lobbyCodeInput').value = joinCode.toUpperCase();
+            }
+            showScreen('joinScreen');
+        }
+
+        async function joinLobby() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            const code = document.getElementById('lobbyCodeInput').value.trim().toUpperCase();
+
+            if (!name) {
+                alert('Bitte gib deinen Namen ein!');
+                return;
+            }
+
+            if (code.length !== 4) {
+                alert('Bitte gib einen 4-stelligen Lobby Code ein!');
+                return;
+            }
+
+            gameState.role = 'player';
+            gameState.playerName = name;
+            gameState.lobbyCode = code;
+            gameState.playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            gameState.credits = 20;
+
+            const result = await apiCall('joinLobby', {
+                lobbyCode: gameState.lobbyCode,
+                playerId: gameState.playerId,
+                playerName: gameState.playerName
+            });
+
+            if (!result.success) {
+                alert('Lobby nicht gefunden!');
+                return;
+            }
+
+            gameState.players = result.lobby.players || {};
+            
+            if (result.lobby.gameStarted) {
+                gameState.gameStarted = true;
+                startPlayerGame();
+            } else {
+                showPlayerLobby();
+            }
+            
+            startPolling();
+        }
+
+        function showPlayerLobby() {
+            document.getElementById('playerLobbyCode').textContent = gameState.lobbyCode;
+            showScreen('playerLobbyScreen');
+            updatePlayersList();
+        }
+
+        function updatePlayersList() {
+            const listIds = ['hostPlayersList', 'playerPlayersList', 'hostGamePlayersList'];
+            
+            listIds.forEach(listId => {
+                const list = document.getElementById(listId);
+                if (!list) return;
+                
+                list.innerHTML = '';
+                Object.entries(gameState.players).forEach(([id, player]) => {
+                    const item = document.createElement('div');
+                    item.className = 'player-item';
+                    item.innerHTML = `
+                        <span class="player-name">${player.name}</span>
+                        <span class="player-credits">${player.credits} Credits</span>
+                    `;
+                    list.appendChild(item);
+                });
+            });
+
+            if (gameState.role === 'host') {
+                const playerCount = Object.keys(gameState.players).length;
+                const btn = document.getElementById('startGameBtn');
+                if (btn) btn.disabled = playerCount === 0;
+            }
+        }
+
+        async function startGame() {
+            if (gameState.role !== 'host') return;
+
+            const result = await apiCall('startGame', {
+                lobbyCode: gameState.lobbyCode
+            });
+
+            if (result.success) {
+                gameState.gameStarted = true;
+                gameState.timeRemaining = 180;
+                showScreen('hostGameScreen');
+                startHostTimer();
+            }
+        }
+
+        function startPlayerGame() {
+            document.getElementById('gamePlayerName').textContent = gameState.playerName;
+            showScreen('gameScreen');
+            gameState.credits = 20;
+            shuffleCards();
+            updateGameCredits();
+            startPlayerTimer();
+        }
+
+        function startHostTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeRemaining--;
+                updateHostTimerDisplay();
+
+                if (gameState.timeRemaining <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    endGame();
+                }
+            }, 1000);
+
+            updateHostTimerDisplay();
+        }
+
+        function startPlayerTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeRemaining--;
+                updateTimerDisplay();
+
+                if (gameState.timeRemaining <= 0) {
+                    clearInterval(gameState.timerInterval);
+                }
+            }, 1000);
+
+            updateTimerDisplay();
+        }
+
+        function updateHostTimerDisplay() {
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            const display = document.getElementById('hostTimer');
+            if (display) {
+                display.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        async function endGame() {
+            gameState.gameEnded = true;
+            
+            if (gameState.role === 'player') {
+                await savePlayerCredits();
+            }
+
+            if (gameState.role === 'host') {
+                await apiCall('endGame', {
+                    lobbyCode: gameState.lobbyCode
+                });
+            }
+
+            setTimeout(async () => {
+                await showResults();
+            }, 1000);
+        }
+
+        async function showResults() {
+            const result = await apiCall('getLobby', {
+                lobbyCode: gameState.lobbyCode
+            });
+
+            if (!result.success) return;
+
+            const sortedPlayers = Object.entries(result.lobby.players)
+                .sort((a, b) => b[1].credits - a[1].credits);
+
+            const podium = document.getElementById('podium');
+            podium.innerHTML = '';
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            for (let i = 0; i < Math.min(3, sortedPlayers.length); i++) {
+                const [id, player] = sortedPlayers[i];
+                const place = document.createElement('div');
+                place.className = `podium-place ${i === 0 ? 'first' : i === 1 ? 'second' : 'third'}`;
+                place.innerHTML = `
+                    <span class="place-number">${medals[i]}</span>
+                    <div>${player.name}</div>
+                    <div style="font-size: 1.5rem; margin-top: 10px;">${player.credits} Credits</div>
+                `;
+                podium.appendChild(place);
+            }
+
+            const leaderboard = document.getElementById('fullLeaderboard');
+            leaderboard.innerHTML = '';
+            
+            sortedPlayers.forEach(([id, player], index) => {
+                const item = document.createElement('div');
+                item.className = 'player-item';
+                item.innerHTML = `
+                    <span class="player-name">${index + 1}. ${player.name}</span>
+                    <span class="player-credits">${player.credits} Credits</span>
+                `;
+                leaderboard.appendChild(item);
+            });
+
+            showScreen('resultsScreen');
+        }
+
+        function shuffleCards() {
+            gameState.cards = Array.from({ length: 64 }, (_, i) => i + 1);
+            gameState.cards.sort(() => Math.random() - 0.5);
+            gameState.selected = [];
+            gameState.revealed = [];
+            gameState.lastWon = null;
+            gameState.lastSelected = [];
+            document.getElementById('gameMessage').style.display = 'none';
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            gameState.cards.forEach((num, index) => {
+                const card = document.createElement('button');
+                card.className = 'card';
+                
+                if (gameState.lastSelected.includes(index) && gameState.lastWon !== null) {
+                    card.classList.add(gameState.lastWon ? 'selected-win' : 'selected-lose');
+                    card.textContent = num;
+                } else if (gameState.revealed.includes(index)) {
+                    card.classList.add('revealed');
+                    card.textContent = num;
+                } else {
+                    card.textContent = '?';
+                }
+                
+                if (gameState.revealed.length === 3) {
+                    card.disabled = true;
+                }
+                
+                card.onclick = () => handleCardClick(index);
+                grid.appendChild(card);
+            });
+        }
+
+        function handleCardClick(index) {
+            if (gameState.revealed.length === 3) return;
+            if (gameState.selected.includes(index) || gameState.revealed.includes(index)) return;
+
+            gameState.selected.push(index);
+            gameState.revealed.push(index);
+            renderGrid();
+
+            if (gameState.selected.length === 3) {
+                setTimeout(() => {
+                    playRound(gameState.selected);
+                }, 500);
+            }
+        }
+
+        async function playRound(selectedIndices) {
+            if (gameState.credits < 1) return;
+
+            gameState.credits -= 1;
+            updateGameCredits();
+
+            const selectedNumbers = selectedIndices.map(i => gameState.cards[i]);
+            const won = checkWin(selectedNumbers);
+
+            gameState.lastWon = won;
+            gameState.lastSelected = [...selectedIndices];
+
+            setTimeout(() => {
+                gameState.revealed = Array.from({ length: 64 }, (_, i) => i);
+                renderGrid();
+
+                if (won) {
+                    showGameMessage(`🎉 Gewonnen! Karten: ${selectedNumbers.join(', ')}`, true);
+                    setTimeout(() => {
+                        gameState.credits += 5;
+                        updateGameCredits();
+                        savePlayerCredits();
+                    }, 500);
+                } else {
+                    showGameMessage(`❌ Verloren! Karten: ${selectedNumbers.join(', ')}`, false);
+                }
+
+                setTimeout(() => {
+                    if (!gameState.gameEnded) {
+                        shuffleCards();
+                        savePlayerCredits();
+                    }
+                }, 3000);
+            }, 1000);
+        }
+
+        function checkWin(nums) {
+            for (let i = 0; i < nums.length; i++) {
+                for (let j = i + 1; j < nums.length; j++) {
+                    const diff = Math.abs(nums[i] - nums[j]);
+                    if (diff === 1 || diff === 2) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function showGameMessage(text, isWin) {
+            const msg = document.getElementById('gameMessage');
+            msg.textContent = text;
+            msg.className = 'message ' + (isWin ? 'win' : 'lose');
+            msg.style.display = 'block';
+        }
+
+        function updateGameCredits() {
+            document.getElementById('gameCredits').textContent = gameState.credits;
+        }
+
+        async function savePlayerCredits() {
+            await apiCall('updateCredits', {
+                lobbyCode: gameState.lobbyCode,
+                playerId: gameState.playerId,
+                credits: gameState.credits
+            });
+        }
+
+        function startPolling() {
+            setInterval(async () => {
+                const result = await apiCall('getLobby', {
+                    lobbyCode: gameState.lobbyCode
+                });
+
+                if (!result.success) return;
+
+                const lobby = result.lobby;
+                gameState.players = lobby.players;
+                gameState.timeRemaining = lobby.timeRemaining;
+
+                if (gameState.role === 'player') {
+                    if (lobby.gameStarted && !gameState.gameStarted) {
+                        gameState.gameStarted = true;
+                        startPlayerGame();
+                    }
+
+                    if (lobby.gameEnded && !gameState.gameEnded) {
+                        gameState.gameEnded = true;
+                        clearInterval(gameState.timerInterval);
+                        await showResults();
+                    }
+
+                    if (!gameState.gameStarted) {
+                        updatePlayersList();
+                    }
+                } else if (gameState.role === 'host') {
+                    updatePlayersList();
+                    
+                    if (gameState.gameStarted && !gameState.gameEnded && lobby.gameEnded) {
+                        gameState.gameEnded = true;
+                        clearInterval(gameState.timerInterval);
+                        await showResults();
+                    }
+                }
+            }, 1000);
+        }
+
+        async function leaveLobby() {
+            await apiCall('leaveLobby', {
+                lobbyCode: gameState.lobbyCode,
+                playerId: gameState.playerId
+            });
+            showStartScreen();
+        }
+
+        async function closeLobby() {
+            await apiCall('deleteLobby', {
+                lobbyCode: gameState.lobbyCode
+            });
+            showStartScreen();
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showStartScreen() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            gameState = {
+                role: null,
+                lobbyCode: null,
+                playerName: null,
+                playerId: null,
+                players: {},
+                gameStarted: false,
+                gameEnded: false,
+                timeRemaining: 180,
+                timerInterval: null,
+                cards: [],
+                selected: [],
+                revealed: [],
+                credits: 20,
+                lastWon: null,
+                lastSelected: []
+            };
+            showScreen('startScreen');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const joinCode = urlParams.get('join');
+            if (joinCode) {
+                showJoinScreen();
+            }
+        });
+    </script>
+</body>
+</html>
+
+<!--
+===========================================
+INSTALLATION ANLEITUNG:
+===========================================
+
+1. Erstelle diese Dateien auf deinem Server:
+   - index.html (dieser Code)
+   - api.php (siehe unten)
+
+2. Stelle sicher, dass der Ordner "game_data" erstellt werden kann
+   oder erstelle ihn manuell mit Schreibrechten (chmod 777)
+
+3. Fertig! Öffne index.html im Browser
+
+===========================================
+PHP BACKEND CODE - Speichere als "api.php"
+===========================================
+
+Erstelle eine neue Datei namens "api.php" mit folgendem Inhalt:
+-->

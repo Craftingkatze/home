@@ -1,0 +1,23 @@
+=== MEMORY SPIEL DATEN ===
+Gespeichert am: 2026-01-16 17:10:25
+
+=== SPIEL ZUSAMMENFASSUNG ===
+Spieler,Session-ID,Datum,Startzeit,Endzeit,Spieldauer(Sek),Gesamtrunden,Erfolgreiche,Erfolglose,Erfolgsrate(%),Paare,Abgeschlossen
+"test2","session_1768579807417_vn1gguz3k","16.1.2026","17:10:07","17:10:25",18,11,1,10,9.09,1,Nein
+
+=== DETAILLIERTE RUNDEN für Session: session_1768579807417_vn1gguz3k ===
+Runde,Ergebnis,Karte1,Karte2,Gefundene_Paare,Verbleibende_Karten,Theoretische_P(Paar)%,Zeitstempel
+1,Fehlschlag,"🎸","🎻",0,64,1.59,"17:10:09"
+2,Fehlschlag,"🏉","🥋",0,64,1.59,"17:10:11"
+3,Fehlschlag,"🎾","🎪",0,64,1.59,"17:10:12"
+4,Fehlschlag,"🎯","🏈",0,64,1.59,"17:10:14"
+5,Fehlschlag,"🏈","🏉",0,64,1.59,"17:10:16"
+6,Fehlschlag,"🎸","🏐",0,64,1.59,"17:10:17"
+7,Fehlschlag,"🏉","🏒",0,64,1.59,"17:10:19"
+8,Erfolg,"🏉","🏉",1,62,1.59,"17:10:20"
+9,Fehlschlag,"🥋","🎾",1,62,1.64,"17:10:22"
+10,Fehlschlag,"🎨","🥊",1,62,1.64,"17:10:24"
+11,Fehlschlag,"🏓","🎲",1,62,1.64,"17:10:25"
+
+--------------------------------------------------------------------------------
+

@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="icon" type="image/png" href="CC v2-1grau (1) - Kopie.png">
+    <nav>
+        <a href="/" >Home</a>
+        <a href="/wetter" >Wetter App</a>
+        <a href="/twitch">Twitch App</a>
+        <a href="/server" class="active">Scuffed Attack</a>
+        <a href="/flags">Flags</a>
+    </nav>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=download" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=open_in_new" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scuffed Attack</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="server-style3.css">
+        <style>
+            .player-list-section .tag-vip {
+                background-color: #0170df;
+                color: white;
+            }
+            .tag-vip {
+                background-color: #0170df;
+                color: white;
+            }
+                    
+            .loading {
+                opacity: 0.7;
+                pointer-events: none;
+            }
+            .error-message {
+                color: #ff6b6b;
+                font-style: italic;
+            }
+            .link-button:hover {
+                background-color: #4CAF50 !important;
+                color: #2c2c2c !important;
+                transform: scale(1.05);
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+            }
+            .link-button:active {
+                transform: scale(0.98);
+                transition: all 0.1s ease;
+            }
+            /* Stile für Beitrags-Tags */
+            .player-tag.tag-paid {
+                background-color: #4CAF50;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: bold;
+                margin-left: 5px;
+            }
+            .player-tag.tag-unpaid {
+                background-color: #ff6b6b;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: bold;
+                margin-left: 5px;
+            }
+        </style>
+</head>
+<body>
+    <!-- Fullscreen Popup -->
+    <div id="fullscreen-popup">
+        <button class="close-popup" onclick="closeFullscreenPopup()">×</button> 
+        <div class="popup-content">
+            <h1 class="popup-title">Scuffed Attack 2</h1>
+            <p class="popup-subtitle">Startet am 7. November 2025!</p>
+            
+            <div class="countdown-container">
+                <div class="countdown-row">
+                    <div class="countdown-item" id="countdown-days">00</div>
+                    <div class="countdown-item" id="countdown-hours">00</div>
+                    <div class="countdown-item" id="countdown-minutes">00</div>
+                    <div class="countdown-item" id="countdown-seconds">00</div>
+                </div>
+                <div class="countdown-labels">
+                    <span class="countdown-label">Tage</span>
+                    <span class="countdown-label">Stunden</span>
+                    <span class="countdown-label">Minuten</span>
+                    <span class="countdown-label">Sekunden</span>
+                </div>
+            </div>
+            
+            <p class="popup-message">Melde dich jetzt an, um bereit zu sein, wenn Scuffed Attack 2 startet!</p>
+            <a href="https://tally.so/r/wo4P4P" target="_self" class="signup-button">Jetzt Registrieren</a>
+            <a href="https://www.paypal.com/pool/9jJ4zu03XI?sr=ancr" target="_blank" class="signup-button" style="background-color: #0170df;">3€ Gebühren zahlen</a>
+            <br>
+           
+          
+             <div>
+            <a class="server-card" href="https://craftingkatze.de/mod-download/scuffed-attack-2-v1.mrpack" target="_blank">Modpack Download</a>
+            </div>
+
+            <h3 style="color: #fff;">Bereits registrierte Spieler:</h3>
+            
+            <!-- Hier wird die Liste der registrierten Spieler angezeigt -->
+            <div class="registered-players-popup">
+                <div id="all-players-list" class="loading">Lade Spieler...</div>
+            </div>
+            
+            <br>
+            <a href="https://craftingkatze.de" target="_self" class="server-card">Zurück</a>
+        </div>
+    </div>
+
+    <header>
+        <h1 class="card-textzwei">Scuffed Attack</h1>
+        <a href="https://craftingkatze.de" target="_">
+            <img src="CC v2-1grau (1) - Kopie.png" alt="Craftingkatze Logo" class="logo" draggable="false">
+        </a>        
+        <div class="card-textzwei" style="display: flex; align-items: center; justify-content: center; height: 3vh; margin-top: 30px; user-select: none; -webkit-user-select: none; -ms-user-select: none;">
+            <div class="server-card" title="Serverstatus: Klicke zum Aktualisieren" onclick="checkServerStatus()" style="width: 25%; text-align: center;">
+                <span id="status-indicator" class="status-dot"></span>
+                <span class="card-text" id="server-status">Lädt...</span>
+            </div>
+        </div>
+    </header>
+<br>
+<div class="cards-container">
+    <!-- Server-IP-Karte -->
+    <div class="server-card" title="Klicke, um die Server-IP zu kopieren" onclick="copyToClipboard('mc.craftingkatze.de')">
+        <span class="material-icons">content_copy</span>
+        <span id="copyButton" class="card-text">mc.craftingkatze.de</span>
+    </div>
+
+    <!-- Spieleranzahl-Karte -->
+    <div class="server-card" style="user-select: none; -webkit-user-select: none; -ms-user-select: none;" title="Spieleranzahl auf dem Server" onclick="showPlayerList()">
+        <span class="material-icons">groups</span>
+        <span class="card-text" id="player-count">Lädt...</span>
+        <span class="card-text"> Spieler online!</span>
+    </div>
+</div>
+<div class="cards-container">
+    <!-- Server Daten -->
+    <div class="server-card" title="Klicke, um die Server Daten anzuzeigen" onclick="openServerData()">
+        <span class="material-icons">data_saver_on</span>
+        <span class="card-text">Server Daten</span>
+    </div>
+
+    <!-- Map -->
+     <!--style="pointer-events: none; opacity: 0.5;"-->
+    <div class="server-card"  title="Klicke, um zur Server Map zu gelangen" onclick="window.open('http://www.map.craftingkatze.de/#world1:0:53:0:251:0:0:0:1:flat', '_blank')">
+        <span class="material-icons">map</span>
+        <span class="card-text">Server Map</span>
+    </div>
+</div>
+<br>
+    <main>
+        <div class="content">
+            <h1 class="descriptionuno">Was ist Scuffed Attack</h1>
+            <div class="description">
+                <p id="server-description">
+                    Suchst du nach einem Server, der mehr bietet als nur Spielspaß? Bei Scuffed Attack erwartet dich eine engagierte Community und ein Team, das Wünsche umsetzt, Cheater bannt und für Ordnung sorgt. Spieler wie Benjamin sagen: „Scuffed Attack hat mich hochgeholt – seitdem bin ich ein neuer, glücklicher Mensch!"
+                    Unser Server läuft auf der Minecraft-Version <span style="font-weight: bold;" id="server-version">...wird geladen...</span>. Werde Teil der Community und erlebe Gaming auf einem neuen Level.
+                </p>
+            </div>
+        </div>
+        
+<div id="player-list-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+    <h2>Spielerliste</h2>
+    
+    <!-- Online-Spieler Bereich -->
+    <div class="player-list-section">
+        <h3><span class="status-indicator online-indicator"></span>Online: <span id="online-count" class="player-count">00</span></h3> 
+        <div id="online-players"></div>
+    </div>
+    
+    <!-- Trennlinie -->
+    <div class="list-divider"></div>
+    
+    <!-- Offline-Spieler Bereich -->
+    <div class="player-list-section">
+        <h3><span class="status-indicator offline-indicator"></span>Offline: <span id="offline-count" class="player-count">00</span></h3>
+        <div id="offline-players"></div>
+    </div>
+    
+    <button class="server-card" onclick="closePlayerList()">Schließen</button>
+</div>
+
+        <!-- Modal für registrierte Spieler -->
+        <div id="registered-players-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+            <div class="modal-content">
+                <h2>Registrierte Spieler</h2>
+                <div id="registered-players-list" class="player-list loading">Lade Spieler...</div>
+                <button class="server-card" onclick="closeRegisteredPlayers()">Schließen</button>
+            </div>
+        </div>
+        
+        <div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 999;" onclick="closePlayerList(); closeRegisteredPlayers();"></div>
+        
+      <br>
+      
+      <div class="content">
+          <h1 class="descriptionuno">Zitate</h1>
+          <div class="quotes-section">
+              <div class="quote-card">
+                  „Scuffed Attack hat mein Leben verändert. ich war ganz unten, aber er hat mich hoch geholt, und seitdem bin ich ein neuer, glücklicher Mensch.„ -Benjamln_94
+              </div>
+              <div class="quote-card">
+                  „Scuffed Attack ist das beste Minecraft-Projekt, das ich je gespielt habe. Es hat alles verändert und mir eine neue Perspektive gegeben!" –Craftingkatze
+              </div>               
+          </div>
+      </div>
+
+      <br>
+         <div class="content">
+          <h1 class="descriptionuno">Scuffed Attack Modpack</h1>
+          <div class="description">
+            <p>
+              Lade dir jetzt Das offizielle Modpack für Scuffed Attack 2 herunter um das optimale Spielerlebnis zu bekommen. Du darfst auch gerne eigene mods hinzufügen achte aber bitte darauf das diese
+              "Fair" sind und dir kein Vorteil gegenüber anderen geben wie z.B. X-Ray, auto-totem oder normale Freecam.
+            </p>
+            <h4>Anleitung:</h4>
+            <ol style="margin: 10px;">
+               <li style="margin-bottom: 5px;">Lade Das Modpack herunter. </li>
+                  <li style="margin-bottom: 5px;">Stelle sicher das du Modrinth installiert hast. 
+                      - Wenn Nein lade es <a style="color: rgb(142, 187, 255); font-weight: normal; text-decoration: underline;" href="https://modrinth.com/app" target="_blank">hier</a> herrunter.</li>  
+                  <li style="margin-bottom: 5px;">Klicke auf die herruntergeladene datei.</li>  
+                  <li>Deine mods sollten sich jetzt automatisch herrunter laden.</li>  
+            </ol>
+          </div>
+          <div>
+            <a class="server-card" href="https://craftingkatze.de/mod-download/scuffed-attack-2-v1.mrpack" target="_blank">Download</a>
+          </div>
+      </div>
+      <br> 
+     <!-- <div class="content">
+          <h1 class="descriptionuno">Server Live Map</h1>
+          <div class="description">
+              <p>
+                  Entdecke die Welt von unserem Minecraft-Server in Echtzeit! Unsere Live-Karte zeigt dir alle wichtigen Details, die du brauchst, um in unserer Welt richtig durchzustarten. Egal, ob du gerade auf einem Abenteuer bist, neue Bauwerke entdecken möchtest oder einfach nur sehen willst, was andere Spieler gerade tun – die Karte bietet dir einen spannenden Überblick. Du kannst Spielerstandorte, riesige Bauten und sogar versteckte Geheimnisse entdecken, die du sonst vielleicht nie finden würdest. 
+              </p>
+          </div>
+          <div>
+              <a class="server-card" id="map-button" href="http://www.map.craftingkatze.de/?worldname=FinalWorld2&mapname=flat&zoom=3&x=2646&y=64&z=4231#" target="_blank" title="Karte Online">Karte öffnen</a>
+          </div>
+      </div>
+      
+      <br>
+-->
+      
+      <div class="content">
+          <h1 class="descriptionuno">Wichtig!</h1>
+          <div class="description">
+              <p>
+                  Achtung: Der Server wird bald endgültig abgeschaltet – du hast nur noch wenige Tage, um alles zu erleben! Der Countdown läuft, und sobald die Zeit abgelaufen ist, wird der Server für immer offline sein. Alle Fortschritte und Erlebnisse, die du noch sehen möchtest, müssen jetzt schnell gemacht werden. Nutze die verbleibende Zeit, um dir noch die letzten Eindrücke zu sichern! Weitere Infos zum Map-Download findest du unten.
+              </p>
+              <div>
+                  <div style="pointer-events: none; opacity: 0.5;" title="Nach Ablauf ist der Server für immer aus!">
+                      <a class="server-card" id="material-symbols-outlined" href="#">    
+                          <span class="card-textzwei">Verbleibende Zeit:</span>
+                          <div id="timeRemaining">Lädt...</div>
+                      </a>
+                  </div>
+              </div>
+          </div>
+      </div>
+        
+      <br>
+      
+      <div class="content">
+          <h1 class="descriptionuno">Scuffed Attack 1 Download</h1>
+          <div class="description">
+              <p>
+                Der Download der Karte wird nach Ablauf des Countdowns verfügbar sein. Bis dahin hast du die Gelegenheit, die Welt auf der Live-Karte zu erkunden und all die großartigen Bauwerke, Abenteuer und Veränderungen zu sehen, die die Community erschaffen hat. Unsere Serverwelt wächst ständig, also lohnt it sich, immer wieder einen Blick darauf zu werfen. Der Countdown läuft, also bleib gespannt! Sobald die Zeit um ist, kannst du die komplette Karte bequem herunterladen und für deine eigenen Minecraft-Projekte verwenden oder einfach als Erinnerung an all die coolen Momente, die du auf dem Server erlebt hast.
+              </p>
+          </div>
+          <div>
+            <div title="Nach Ablauf ist Der Map-Download möglich">
+              <a class="server-card" id="download-button" href="https://drive.usercontent.google.com/download?id=11FDvL9d7p83rmGUDhzwGLV-Vmwrrmx39&export=download&authuser=0&confirm=t&uuid=11e3dd3d-9fa9-4ae5-84e6-7ce6e0be6c1f&at=AIrpjvOAQni9lmnszy-D8vRRf9bf%3A1736375994568" target="_blank">    
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#4CAF50" style="margin: 5px;">
+              <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+              </svg>
+                <div id="countdown">Lädt...</div>
+              <span class="card-textzwei"></span>
+              </a>
+          </div>
+      </div>
+      </div>
+      
+      <br>
+      
+      <div class="content">
+          <h1 class="descriptionuno">Server Daten</h1>
+          <div class="description">
+            <p>
+              Erfahre mehr über den Status unseres Minecraft-Servers in Echtzeit! Du kannst die aktuellen Spielerzahlen, die Version des Servers und weitere Informationen sehen. Klicke auf den Button, um dir die Statistiken anzeigen zu lassen.
+            </p>
+          </div>
+          <div>
+            <a class="server-card" onclick="openServerData()">Daten anzeigen</a>
+          </div>
+      </div>
+      
+      <!-- Popup für die Serverstatistiken -->
+      <div id="server-data-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+          <div>
+              <h2>Serverdaten</h2>
+              <div id="server-data" class="server-data loading">Lade Serverdaten...</div>
+              <!-- Button zum Schließen des Popups -->
+              <button class="server-card" onclick="closeServerData()">Schließen</button>
+          </div>
+      </div>
+      
+      <br>
+    </main>
+    
+    <hr>
+    
+    <div class="footer">
+        <a href="/imp">Impressum</a>
+        <a href="/Datenschutzerklaerung">Datenschutzerklärung</a>
+    </div>
+    <br>
+
+    <script>
+    // ========== KONFIGURATION ==========
+    const CONFIG = {
+        GOOGLE_SHEETS_URL: '/tabelle/example1.tsv',
+        PRIMARY_TSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSjFudCkidZAMLqBf2TtXORa27pJhDtHcm_8tmL-iZNMp1x-VVVLCUZ7BT0UUVZt9H8jK07Npvl3ZGu/pub?gid=0&single=true&output=tsv',
+        SERVER_IP: "mc.craftingkatze.de",
+        API_URL: "https://api.mcstatus.io/v2/status/java/mc.craftingkatze.de",
+        SERVER_SHUTDOWN_DATE: '2026-01-11T00:30:00',
+        SCUFFED_ATTACK_2_DATE: '2025-11-07T18:00:00',
+        CACHE_DURATION: 30000,
+        RETRY_DELAY: 5000,
+        MAX_RETRIES: 3
+    };
+
+    // ========== GLOBALE VARIABLEN ==========
+    let specialPlayers = [];
+    let cache = {
+        players: { data: null, timestamp: 0 },
+        serverStatus: { data: null, timestamp: 0 },
+        registeredPlayers: { data: null, timestamp: 0 }
+    };
+    let retryCounters = {
+        players: 0,
+        serverStatus: 0,
+        registeredPlayers: 0
+    };
+
+    // ========== CACHE MANAGEMENT ==========
+    function getCachedData(key) {
+        const now = Date.now();
+        const cached = cache[key];
+        if (cached && cached.data && (now - cached.timestamp) < CONFIG.CACHE_DURATION) {
+            console.log(`[CACHE] ${key} aus Cache geladen`);
+            return cached.data;
+        }
+        return null;
+    }
+
+    function setCachedData(key, data) {
+        cache[key] = {
+            data: data,
+            timestamp: Date.now()
+        };
+    }
+
+    // ========== FEHLERBEHANDLUNG ==========
+    function handleError(context, error, elementId = null, fallbackText = "Fehler") {
+        console.error(`[${context}] Fehler:`, error);
+        
+        if (elementId && document.getElementById(elementId)) {
+            const element = document.getElementById(elementId);
+            element.textContent = fallbackText;
+            element.classList.add('error-message');
+            element.classList.remove('loading');
+        }
+        
+        // Retry-Logik
+        if (retryCounters[context] < CONFIG.MAX_RETRIES) {
+            retryCounters[context]++;
+            console.log(`[${context}] Wiederholung ${retryCounters[context]}/${CONFIG.MAX_RETRIES} in ${CONFIG.RETRY_DELAY}ms`);
+            setTimeout(() => {
+                switch(context) {
+                    case 'players':
+                        fetchPlayerCount();
+                        fetchPlayerList();
+                        break;
+                    case 'serverStatus':
+                        checkServerStatus();
+                        break;
+                    case 'registeredPlayers':
+                        loadRegisteredPlayersForPopup();
+                        break;
+                }
+            }, CONFIG.RETRY_DELAY);
+        }
+    }
+
+    // ========== SPECIAL PLAYERS MANAGEMENT ==========
+    function loadSpecialPlayersFromSheet() {
+        console.log("[LOAD] Lade specialPlayers...");
+        
+        const cached = getCachedData('registeredPlayers');
+        if (cached) {
+            processSpecialPlayers(cached);
+            return;
+        }
+
+        // Zuerst versuchen, von example.com zu laden (schneller)
+        fetch(CONFIG.GOOGLE_SHEETS_URL)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.text();
+            })
+            .then(tsvData => {
+                setCachedData('registeredPlayers', tsvData);
+                processSpecialPlayers(tsvData);
+                retryCounters.registeredPlayers = 0;
+            })
+            .catch(error => {
+                console.log("[LOAD] example.com fehlgeschlagen, versuche TSV-URL...");
+                // Fallback auf die langsame TSV-URL
+                fetch(CONFIG.PRIMARY_TSV_URL)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        return response.text();
+                    })
+                    .then(tsvData => {
+                        setCachedData('registeredPlayers', tsvData);
+                        processSpecialPlayers(tsvData);
+                        retryCounters.registeredPlayers = 0;
+                    })
+                    .catch(fallbackError => {
+                        handleError('registeredPlayers', fallbackError);
+                    });
+            });
+    }
+
+    // In der processSpecialPlayers Funktion - Beitragsstatus aus Spalte 12 lesen
+    function processSpecialPlayers(tsvData) {
+        const rows = tsvData.split('\n').slice(1);
+        specialPlayers = [];
+        
+        rows.forEach(row => {
+            if (row.trim() === '') return;
+            
+            const columns = row.split('\t');
+            if (columns.length < 12) return;
+            
+            const minecraftName = columns[5] ? columns[5].trim() : '';
+            const tag = columns[9] ? columns[9].trim().toLowerCase() : '';
+            const hasPaid = columns[12] ? columns[12].trim().toLowerCase() === 'true' : false;
+            const coordX = columns[10] ? columns[10].trim() : '';
+            const coordY = columns[11] ? columns[11].trim() : '';
+            
+            if (minecraftName && minecraftName !== 'Unbekannt') {
+                let formattedTag = "Player";
+                switch(tag) {
+                    case 'owner':
+                        formattedTag = "Owner";
+                        break;
+                    case 'admin':
+                        formattedTag = "Admin";
+                        break;
+                    case 'co-admin':
+                        formattedTag = "Co-Admin";
+                        break;
+                    case 'vip':
+                        formattedTag = "VIP";
+                        break;
+                    default:
+                        formattedTag = "Player";
+                }
+                
+                let generatedLink = "";
+                if (coordX && coordY) {
+                    generatedLink = `http://www.map.craftingkatze.de/#world1:${coordX}:36:${coordY}:266:0:0:0:1:flat`;
+                }
+                
+                specialPlayers.push({
+                    name: minecraftName,
+                    extraLink: generatedLink,
+                    tag: formattedTag,
+                    hasPaid: hasPaid,
+                    hasLink: generatedLink && generatedLink !== '' && isValidUrl(generatedLink),
+                    coordX: coordX,
+                    coordY: coordY
+                });
+            }
+        });
+        
+        console.log("[LOAD] Special players geladen:", specialPlayers.length);
+    }
+
+    function isValidUrl(string) {
+        try {
+            const url = new URL(string);
+            return url.protocol === "http:" || url.protocol === "https:";
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function createPlayerTag(tagType) {
+        const tag = document.createElement("span");
+        tag.classList.add("player-tag");
+        
+        switch(tagType) {
+            case "Admin":
+                tag.classList.add("tag-admin");
+                tag.textContent = "Admin";
+                break;
+            case "Owner":
+                tag.classList.add("tag-owner");
+                tag.textContent = "Owner";
+                break;
+            case "Co-Admin":
+                tag.classList.add("tag-coadmin");
+                tag.textContent = "Co-Admin";
+                break;
+            case "VIP":
+                tag.classList.add("tag-vip");
+                tag.textContent = "Donor";
+                break;
+            default:
+                tag.classList.add("tag-player");
+                tag.textContent = "Player";
+        }
+        
+        return tag;
+    }
+
+    function getSpecialPlayers() {
+        return specialPlayers.length > 0 ? specialPlayers : [];
+    }
+
+    // ========== FULLSCREEN POPUP ==========
+    function showFullscreenPopup() {
+        const popup = document.getElementById('fullscreen-popup');
+        const targetDate = new Date(CONFIG.SCUFFED_ATTACK_2_DATE).getTime();
+        const now = new Date().getTime();
+        
+        if (now < targetDate) {
+            popup.classList.remove('hidden');
+            startCountdown();
+            loadRegisteredPlayersForPopup();
+        } else {
+            popup.classList.add('hidden');
+        }
+    }
+    
+    function closeFullscreenPopup() {
+        document.getElementById('fullscreen-popup').classList.add('hidden');
+    }
+    
+    function startCountdown() {
+        const targetDate = new Date(CONFIG.SCUFFED_ATTACK_2_DATE).getTime();
+        
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const timeLeft = targetDate - now;
+            
+            if (timeLeft <= 0) {
+                closeFullscreenPopup();
+                return;
+            }
+            
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            document.getElementById('countdown-days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('countdown-hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('countdown-minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('countdown-seconds').textContent = seconds.toString().padStart(2, '0');
+            
+            setTimeout(updateCountdown, 1000);
+        }
+        
+        updateCountdown();
+    }
+
+    // ========== REGISTRIERTE SPIELER ==========
+    function loadRegisteredPlayersForPopup() {
+        const allPlayersList = document.getElementById("all-players-list");
+        if (!allPlayersList) return;
+        
+        allPlayersList.innerHTML = "Lade Spieler...";
+        allPlayersList.classList.add('loading');
+
+        const cached = getCachedData('registeredPlayers');
+        if (cached) {
+            displayRegisteredPlayers(cached, allPlayersList);
+            return;
+        }
+
+        // Zuerst versuchen, von example.com zu laden (schneller)
+        fetch(CONFIG.GOOGLE_SHEETS_URL)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.text();
+            })
+            .then(tsvData => {
+                setCachedData('registeredPlayers', tsvData);
+                displayRegisteredPlayers(tsvData, allPlayersList);
+                retryCounters.registeredPlayers = 0;
+            })
+            .catch(error => {
+                console.log("[LOAD] example.com fehlgeschlagen, versuche TSV-URL...");
+                // Fallback auf die langsame TSV-URL
+                fetch(CONFIG.PRIMARY_TSV_URL)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        return response.text();
+                    })
+                    .then(tsvData => {
+                        setCachedData('registeredPlayers', tsvData);
+                        displayRegisteredPlayers(tsvData, allPlayersList);
+                        retryCounters.registeredPlayers = 0;
+                    })
+                    .catch(fallbackError => {
+                        handleError('registeredPlayers', fallbackError, 'all-players-list', "Fehler beim Laden");
+                    });
+            });
+    }
+
+    function displayRegisteredPlayers(tsvData, container) {
+        const rows = tsvData.split('\n').slice(1);
+        container.innerHTML = "";
+        container.classList.remove('loading');
+
+        if (rows.length === 0 || (rows.length === 1 && rows[0].trim() === '')) {
+            container.innerHTML = "Noch keine registrierten Spieler.";
+            return;
+        }
+        
+        let playerCount = 0;
+        
+        rows.forEach(row => {
+            if (row.trim() === '' || playerCount >= 18) return;
+            
+            const columns = row.split('\t');
+            if (columns.length < 12) return;
+            
+            const realName = columns[4] ? columns[4].trim() : '';
+            const minecraftName = columns[5] ? columns[5].trim() : 'Unbekannt';
+            const hasPaid = columns[12] ? columns[12].trim().toLowerCase() === 'true' : false;
+            
+            if (minecraftName === 'Unbekannt' || minecraftName === '') return;
+            
+            let role = "Player";
+            const specialPlayer = getSpecialPlayers().find(sp => sp.name === minecraftName);
+            if (specialPlayer) {
+                role = specialPlayer.tag;
+            }
+            
+            const playerItem = createPlayerItem(minecraftName, realName, role, hasPaid);
+            container.appendChild(playerItem);
+            playerCount++;
+        });
+        
+        if (rows.length > 18) {
+            const morePlayers = document.createElement("div");
+            morePlayers.textContent = `... und ${rows.length - 18} weitere Spieler`;
+            morePlayers.style.fontSize = "1.1rem";
+            morePlayers.style.fontStyle = "italic";
+            morePlayers.style.marginTop = "8px";
+            container.appendChild(morePlayers);
+        }
+    }
+
+    // In der createPlayerItem Funktion - nur für nicht bezahlte Spieler reduzierte Opacity
+    function createPlayerItem(minecraftName, realName, role, hasPaid) {
+        const playerHead = document.createElement("img");
+        playerHead.src = `https://mc-heads.net/avatar/${minecraftName}/36`;
+        playerHead.alt = `${minecraftName} Avatar`;
+        playerHead.loading = "lazy";
+        playerHead.style.width = "36px";
+        playerHead.style.height = "36px";
+        playerHead.style.marginRight = "18px";
+
+        const playerName = document.createElement("span");
+        playerName.textContent = minecraftName;
+        playerName.style.fontSize = "1.5rem";
+        playerName.style.color = "#fff";
+
+        const realNameElement = document.createElement("span");
+        if (realName && realName !== '') {
+            realNameElement.textContent = ` (${realName})`;
+            realNameElement.style.fontStyle = "italic";
+            realNameElement.style.fontSize = "1.1rem";
+            realNameElement.style.color = "#666";
+            realNameElement.style.marginLeft = "8px";
+        }
+
+        const roleTag = createPlayerTag(role);
+        roleTag.style.alignSelf = "center";
+        roleTag.style.marginLeft = "auto";
+        roleTag.style.marginRight = "10px";
+        roleTag.style.fontSize = "0.9rem";
+
+        const nameContainer = document.createElement("div");
+        nameContainer.style.display = "flex";
+        nameContainer.style.alignItems = "center";
+        nameContainer.style.flexGrow = "1";
+        nameContainer.appendChild(playerHead);
+        nameContainer.appendChild(playerName);
+        nameContainer.appendChild(realNameElement);
+        nameContainer.appendChild(roleTag);
+            
+        const icon = document.createElement("span");
+        icon.classList.add("material-symbols-outlined");
+        icon.textContent = "open_in_new";
+        icon.style.cursor = "pointer";
+
+        const playerItem = document.createElement("div");
+        playerItem.classList.add("player-item");
+        playerItem.style.cursor = "pointer";
+        
+        // Reduzierte Opacity für nicht bezahlte Spieler
+        if (!hasPaid) {
+            playerItem.style.opacity = "0.5";
+            playerItem.style.position = "relative";
+            
+            // Text über dem Namen für nicht bezahlte Spieler
+            const unpaidText = document.createElement("div");
+            unpaidText.textContent = "Nicht bezahlt";
+            unpaidText.style.position = "absolute";
+            unpaidText.style.top = "12px";
+            unpaidText.style.left = "310px";
+            unpaidText.style.color = "#ff6b6b";
+            unpaidText.style.fontSize = "1.2rem";
+            unpaidText.style.fontStyle = "italic";
+            unpaidText.style.fontWeight = "bold";
+            unpaidText.style.backgroundColor = "rgba(0,0,0,0.7)";
+            unpaidText.style.padding = "2px 6px";
+            unpaidText.style.borderRadius = "4px";
+            
+            playerItem.appendChild(unpaidText);
+        }
+        
+        playerItem.addEventListener("click", function() {
+            window.open(`https://namemc.com/profile/${minecraftName}`, '_blank');
+        });
+        
+        playerItem.appendChild(nameContainer);
+        playerItem.appendChild(icon);
+
+        return playerItem;
+    }
+
+    // In der createPlayerListItem Funktion - nur für nicht bezahlte Spieler reduzierte Opacity
+   // In der createPlayerListItem Funktion - Real Name hinzufügen
+function createPlayerListItem(player, isOnline) {
+    const playerNameClean = player.name_clean || player.name_raw;
+    
+    // Real Name aus specialPlayers finden
+    const specialPlayer = getSpecialPlayers().find(sp => sp.name === playerNameClean);
+    const realName = specialPlayer ? getRealNameFromSpecialPlayers(playerNameClean) : '';
+    
+    // Rest der Funktion bleibt gleich...
+    const playerHead = document.createElement("img");
+    playerHead.src = `https://mc-heads.net/avatar/${playerNameClean}/40`;
+    playerHead.alt = `${playerNameClean} Avatar`;
+    playerHead.loading = "lazy";
+    playerHead.style.width = "40px";
+    playerHead.style.height = "40px";
+    playerHead.style.marginRight = "15px";
+
+    const playerName = document.createElement("span");
+    playerName.textContent = playerNameClean;
+    playerName.classList.add("player-name");
+    playerName.style.fontSize = "1.6rem";
+    playerName.style.color = "#fff";
+
+    // Real Name Element erstellen
+    const realNameElement = document.createElement("span");
+    if (realName && realName !== '') {
+        realNameElement.textContent = ` (${realName})`;
+        realNameElement.style.fontStyle = "italic";
+        realNameElement.style.fontSize = "1.1rem";
+        realNameElement.style.color = "#666";
+        realNameElement.style.marginLeft = "8px";
+    }
+
+    const linkButton = document.createElement("button");
+    linkButton.classList.add("link-button");
+    linkButton.style.display = "none";
+    linkButton.innerHTML = '<span class="material-icons" style="font-size: 18px; margin-right: 5px;">home</span>Find Base';
+    linkButton.title = "Zusätzlicher Link";
+    linkButton.style.marginLeft = "4px";
+    linkButton.style.marginRight = "5px";
+    linkButton.style.padding = "8px 12px";
+    linkButton.style.display = "flex";
+    linkButton.style.alignItems = "center";
+    linkButton.style.justifyContent = "center";
+    linkButton.style.backgroundColor = "rgba(40, 40, 40, 0.37)"; 
+    linkButton.style.border = "2px solid #4CAF50";
+    linkButton.style.color = "#4CAF50";
+    linkButton.style.borderRadius = "8px";
+    linkButton.style.fontSize = "0.9em";
+    linkButton.style.cursor = "pointer";
+    linkButton.style.transition = "background-color 0.3s, color 0.3s";
+    linkButton.style.minWidth = "80px";
+    linkButton.style.textAlign = "center";
+    linkButton.style.fontWeight = "500";
+
+    const playerInfo = document.createElement("div");
+    playerInfo.classList.add("player-info");
+    playerInfo.style.display = "flex";
+    playerInfo.style.alignItems = "center";
+    playerInfo.style.flexGrow = "1";
+    playerInfo.style.border = "none";
+    playerInfo.appendChild(playerHead);
+    playerInfo.appendChild(playerName);
+    playerInfo.appendChild(realNameElement); // Real Name hinzufügen
+
+    const statusBadge = document.createElement("span");
+    statusBadge.classList.add("player-status");
+    if (isOnline) {
+        statusBadge.classList.add("status-online");
+        statusBadge.textContent = "Online";
+    } else {
+        statusBadge.classList.add("status-offline");
+        statusBadge.textContent = "Offline";
+    }
+    statusBadge.style.marginLeft = "auto";
+    statusBadge.style.marginRight = "7px";
+
+    const tagType = specialPlayer ? specialPlayer.tag : "Player";
+    const tag = createPlayerTag(tagType);
+    tag.style.alignSelf = "center";
+    tag.style.marginRight = "10px";
+    
+    const icon = document.createElement("span");
+    icon.classList.add("material-symbols-outlined");
+    icon.textContent = "open_in_new";
+    icon.style.color = "white";
+    icon.style.marginLeft = "auto";
+    icon.style.marginRight = "5px";
+    icon.style.fontSize = "22px";
+
+    const playerItem = document.createElement("div");
+    playerItem.classList.add("player-item");
+    playerItem.style.border = "none";
+    
+    // Reduzierte Opacity für nicht bezahlte Spieler
+    const hasPaid = specialPlayer ? specialPlayer.hasPaid : false;
+    if (!hasPaid) {
+        playerItem.style.opacity = "0.5";
+        playerItem.style.position = "relative";
+        
+        // Text über dem Namen für nicht bezahlte Spieler
+        const unpaidText = document.createElement("div");
+        unpaidText.textContent = "Nicht bezahlt";
+        unpaidText.style.position = "absolute";
+        unpaidText.style.top = "17px";
+        unpaidText.style.left = "310px";
+        unpaidText.style.color = "#ff6b6b";
+        unpaidText.style.fontSize = "1.0rem";
+        unpaidText.style.fontStyle = "italic";
+        unpaidText.style.fontWeight = "bold";
+        unpaidText.style.backgroundColor = "rgba(0,0,0,0.7)";
+        unpaidText.style.padding = "2px 6px";
+        unpaidText.style.borderRadius = "4px";
+        
+        playerItem.appendChild(unpaidText);
+    }
+    
+    playerItem.appendChild(playerInfo);
+    
+    if (specialPlayer && specialPlayer.hasLink) {
+        linkButton.style.display = "flex";
+        playerItem.appendChild(linkButton);
+        linkButton.onclick = function(e) {
+            e.stopPropagation();
+            window.open(specialPlayer.extraLink, '_blank');
+        };
+    }
+    
+    playerItem.appendChild(tag);
+    playerItem.appendChild(statusBadge);
+    playerItem.appendChild(icon);
+
+    playerItem.onclick = function() {
+        window.open(`https://namemc.com/profile/${playerNameClean}`, '_blank');
+    };
+
+    return playerItem;
+}
+
+// Hilfsfunktion, um Real Name aus specialPlayers zu holen
+function getRealNameFromSpecialPlayers(minecraftName) {
+    const cached = getCachedData('registeredPlayers');
+    if (!cached) return '';
+    
+    const rows = cached.split('\n').slice(1);
+    for (let row of rows) {
+        if (row.trim() === '') continue;
+        
+        const columns = row.split('\t');
+        if (columns.length < 12) continue;
+        
+        const currentMinecraftName = columns[5] ? columns[5].trim() : '';
+        const realName = columns[4] ? columns[4].trim() : '';
+        
+        if (currentMinecraftName === minecraftName && realName !== '') {
+            return realName;
+        }
+    }
+    return '';
+}
+    // ========== SERVER STATUS & SPIELERANZAHL ==========
+    function copyToClipboard() {
+        const button = document.getElementById("copyButton");
+        if (!button) return;
+        
+        navigator.clipboard.writeText(CONFIG.SERVER_IP).then(() => {
+            const originalText = button.textContent;
+            button.textContent = "Kopiert!";
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 1000);
+        });
+    }
+
+    function fetchPlayerCount() {
+        const playerCountElement = document.getElementById("player-count");
+        if (!playerCountElement) return;
+
+        const cached = getCachedData('serverStatus');
+        if (cached) {
+            updatePlayerCount(cached, playerCountElement);
+            return;
+        }
+
+        fetch(CONFIG.API_URL)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                setCachedData('serverStatus', data);
+                updatePlayerCount(data, playerCountElement);
+                retryCounters.serverStatus = 0;
+            })
+            .catch(error => {
+                handleError('players', error, 'player-count', "Fehler");
+            });
+    }
+
+    function updatePlayerCount(data, element) {
+    if (data.online) {
+        const playerCount = data.players.online;
+        element.textContent = playerCount;
+        element.classList.remove('error-message');
+        
+        // Tab-Titel aktualisieren
+        document.title = playerCount > 0 ? `Scuffed Attack - ${playerCount}` : "Scuffed Attack";
+    } else {
+        element.textContent = "0";
+        document.title = "Scuffed Attack"; // Zurücksetzen wenn offline
+    }
+}
+
+    function checkServerStatus() {
+        const targetDate = new Date(CONFIG.SCUFFED_ATTACK_2_DATE).getTime();
+        const now = new Date().getTime();
+        
+        if (now < targetDate) {
+            const timeLeft = targetDate - now;
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            const statusElement = document.getElementById('server-status');
+            const indicatorElement = document.getElementById('status-indicator');
+            
+            if (statusElement && indicatorElement) {
+                statusElement.textContent = `Startet in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                statusElement.style.color = 'orange';
+                indicatorElement.className = 'status-dot orange';
+            }
+            
+            setTimeout(checkServerStatus, 1000);
+        } else {
+            const cached = getCachedData('serverStatus');
+            if (cached) {
+                updateServerStatus(cached);
+                return;
+            }
+
+            fetch(CONFIG.API_URL)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    setCachedData('serverStatus', data);
+                    updateServerStatus(data);
+                    retryCounters.serverStatus = 0;
+                })
+                .catch(error => {
+                    handleError('serverStatus', error);
+                });
+        }
+    }
+
+    function updateServerStatus(data) {
+        const statusElement = document.getElementById('server-status');
+        const indicatorElement = document.getElementById('status-indicator');
+        
+        if (!statusElement || !indicatorElement) return;
+
+        if (data.online) {
+            statusElement.textContent = 'Server Online!';
+            statusElement.style.color = 'green';
+            indicatorElement.className = 'status-dot green';
+        } else {
+            statusElement.textContent = 'Server Offline!';
+            statusElement.style.color = 'red';
+            indicatorElement.className = 'status-dot red';
+        }
+    }
+
+    // ========== SPIELERLISTE MODAL ==========
+    function showPlayerList() {
+        fetchPlayerList();
+        document.getElementById("player-list-modal").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+    }
+    
+    function closePlayerList() {
+        document.getElementById("player-list-modal").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    }
+
+    function fetchPlayerList() {
+        const cached = getCachedData('serverStatus');
+        if (cached) {
+            displayPlayerList(cached);
+            return;
+        }
+
+        fetch(CONFIG.API_URL)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                setCachedData('serverStatus', data);
+                displayPlayerList(data);
+                retryCounters.serverStatus = 0;
+            })
+            .catch(error => {
+                handleError('players', error);
+            });
+    }
+
+    function displayPlayerList(data) {
+        const onlinePlayersElement = document.getElementById("online-players");
+        const offlinePlayersElement = document.getElementById("offline-players");
+        const onlineCountElement = document.getElementById("online-count");
+        const offlineCountElement = document.getElementById("offline-count");
+
+        if (!onlinePlayersElement || !offlinePlayersElement) return;
+
+        onlinePlayersElement.innerHTML = "";
+        offlinePlayersElement.innerHTML = "";
+
+        document.getElementById("player-list-modal").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+
+        const formatCount = (count) => count < 10 ? `0${count}` : `${count}`;
+
+        // Online-Spieler
+        if (data.online && data.players && data.players.list) {
+            const onlinePlayers = data.players.list;
+            if (onlineCountElement) onlineCountElement.textContent = formatCount(onlinePlayers.length);
+            
+            onlinePlayers.forEach(player => {
+                const playerItem = createPlayerListItem(player, true);
+                onlinePlayersElement.appendChild(playerItem);
+            });
+        } else {
+            if (onlineCountElement) onlineCountElement.textContent = formatCount(0);
+        }
+
+        // Offline-Spieler
+        const cachedPlayers = getCachedData('registeredPlayers');
+        if (cachedPlayers) {
+            displayOfflinePlayers(cachedPlayers, data, offlinePlayersElement, offlineCountElement);
+        } else {
+            // Fallback-Logik für registrierte Spieler
+            loadRegisteredPlayersWithFallback((tsvData) => {
+                if (tsvData) {
+                    displayOfflinePlayers(tsvData, data, offlinePlayersElement, offlineCountElement);
+                } else {
+                    if (offlineCountElement) offlineCountElement.textContent = "Fehler";
+                }
+            });
+        }
+    }
+
+    function displayOfflinePlayers(tsvData, serverData, container, countElement) {
+        const rows = tsvData.split('\n').slice(1);
+        let offlineCount = 0;
+        
+        rows.forEach(row => {
+            if (row.trim() === '') return;
+            
+            const columns = row.split('\t');
+            if (columns.length < 12) return;
+            
+            const minecraftName = columns[5] ? columns[5].trim() : '';
+            if (minecraftName === '' || minecraftName === 'Unbekannt') return;
+            
+            const isOnline = serverData.online && serverData.players && serverData.players.list && 
+                            serverData.players.list.some(onlinePlayer => 
+                                onlinePlayer.name_clean === minecraftName || 
+                                onlinePlayer.name_raw === minecraftName);
+            
+            if (!isOnline) {
+                const playerItem = createPlayerListItem({ name_clean: minecraftName, name_raw: minecraftName }, false);
+                container.appendChild(playerItem);
+                offlineCount++;
+            }
+        });
+        
+        if (countElement) countElement.textContent = offlineCount < 10 ? `0${offlineCount}` : `${offlineCount}`;
+    }
+
+    // ========== FALLBACK-LOGIK FÜR REGISTRIERTE SPIELER ==========
+    function loadRegisteredPlayersWithFallback(callback) {
+        const cached = getCachedData('registeredPlayers');
+        if (cached) {
+            callback(cached);
+            return;
+        }
+
+        // Zuerst example.com versuchen
+        fetch(CONFIG.GOOGLE_SHEETS_URL)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.text();
+            })
+            .then(tsvData => {
+                setCachedData('registeredPlayers', tsvData);
+                callback(tsvData);
+            })
+            .catch(error => {
+                console.log("[FALLBACK] example.com fehlgeschlagen, versuche TSV-URL...");
+                // Fallback auf TSV-URL
+                fetch(CONFIG.PRIMARY_TSV_URL)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        return response.text();
+                    })
+                    .then(tsvData => {
+                        setCachedData('registeredPlayers', tsvData);
+                        callback(tsvData);
+                    })
+                    .catch(fallbackError => {
+                        console.error("[FALLBACK] Beide Quellen fehlgeschlagen:", fallbackError);
+                        callback(null);
+                    });
+            });
+    }
+
+    // ========== SERVER DATEN MODAL ==========
+    function setupServerDataModal() {
+        const popup = document.getElementById("server-data-modal");
+        const overlay = document.getElementById("overlay");
+        
+        if (!popup || !overlay) return;
+        
+        overlay.addEventListener('click', function(event) {
+            if (popup.style.display === "flex") {
+                closeServerData();
+            }
+        });
+        
+        popup.addEventListener('click', function(event) {
+            if (event.target === popup) {
+                closeServerData();
+            }
+        });
+    }
+
+    function openServerData() {
+        const popup = document.getElementById("server-data-modal");
+        const overlay = document.getElementById("overlay");
+        const serverDataElement = document.getElementById("server-data");
+        
+        if (!popup || !overlay || !serverDataElement) return;
+        
+        popup.style.display = "flex";
+        overlay.style.display = "block";
+        serverDataElement.innerHTML = "Lade Serverdaten...";
+        serverDataElement.classList.add('loading');
+
+        const cached = getCachedData('serverStatus');
+        if (cached) {
+            displayServerData(cached, serverDataElement);
+            return;
+        }
+
+        fetch(CONFIG.API_URL)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                setCachedData('serverStatus', data);
+                displayServerData(data, serverDataElement);
+                retryCounters.serverStatus = 0;
+            })
+            .catch(error => {
+                serverDataElement.innerHTML = `<strong>Fehler beim Abrufen der Daten:</strong> ${error.message}`;
+                serverDataElement.classList.remove('loading');
+                serverDataElement.classList.add('error-message');
+            });
+    }
+
+    function displayServerData(data, element) {
+        element.classList.remove('loading');
+        
+        if (data.online) {
+            let motdContent = "";
+            if (data.motd && data.motd.clean) {
+                if (Array.isArray(data.motd.clean)) {
+                    motdContent = data.motd.clean.join('<br>');
+                } else if (typeof data.motd.clean === 'string') {
+                    motdContent = data.motd.clean;
+                } else {
+                    motdContent = "Keine MOTD verfügbar.";
+                }
+            } else {
+                motdContent = "Keine MOTD verfügbar.";
+            }
+
+            const stats = `
+            <br>
+            <div>
+                <span class="material-icons-outlined">check_circle</span> <strong>Server Online:</strong> Ja
+            </div>
+            <div>
+                <span class="material-icons-outlined">people</span> <strong>Spieler Online:</strong> ${data.players.online} / ${data.players.max}
+            </div>
+            <div>
+                <span class="material-icons-outlined">settings</span> <strong>Version:</strong> ${data.version.name_clean || data.version.name_raw}
+            </div>
+            <br>
+            <img 
+                src="https://api.mcstatus.io/v2/widget/java/mc.craftingkatze.de?format=image" 
+                alt="Minecraft Server Status"
+                style="width:60%;max-width:728px;height:auto;display:block;margin:0 auto;border:none;"
+                loading="lazy">
+            <br>
+            <iframe style="width:728px;height:90px;max-width:100%;border:none;display:block;margin:auto" src="https://de.namemc.com/server/mc.craftingkatze.de/embed" width="728" height="90"></iframe>
+            <br>
+            `;
+
+            element.innerHTML = stats;
+        } else {
+            element.innerHTML = `
+            <img 
+                src="https://api.mcstatus.io/v2/widget/java/mc.craftingkatze.de?format=image" 
+                alt="Minecraft Server Status"
+                style="width:60%;max-width:728px;height:auto;display:block;margin:0 auto;border:none;"
+                loading="lazy">
+            <br>
+             <iframe style="width:728px;height:90px;max-width:100%;border:none;display:block;margin:auto" src="https://de.namemc.com/server/mc.craftingkatze.de/embed" width="728" height="90"></iframe>
+            <br>`;
+        }
+    }
+
+    function closeServerData() {
+        const popup = document.getElementById("server-data-modal");
+        const overlay = document.getElementById("overlay");
+        if (popup) popup.style.display = "none";
+        if (overlay) overlay.style.display = "none";
+    }
+
+    // ========== COUNTDOWN FUNKTIONEN ==========
+    function updateShutdownCountdown() {
+        const shutdownDate = new Date(CONFIG.SERVER_SHUTDOWN_DATE);
+        const now = new Date();
+        const timeDifference = shutdownDate - now;
+
+        const timeRemainingElement = document.getElementById('timeRemaining');
+        if (!timeRemainingElement) return;
+
+        if (timeDifference > 0) {
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            timeRemainingElement.innerText = `${days}d, ${hours}h, ${minutes}m, ${seconds}s`;
+        } else {
+            timeRemainingElement.innerText = 'Der Server ist abgelaufen.';
+        }
+    }
+
+    function updateDownloadCountdown() {
+        const countdownElement = document.getElementById("countdown");
+        if (!countdownElement) return;
+
+        const targetDate = new Date("2024-12-14T16:30:00");
+        targetDate.setMonth(targetDate.getMonth() + 1);
+        const now = new Date();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+            countdownElement.textContent = "Download verfügbar!";
+        } else {
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            countdownElement.textContent = `${days}d, ${hours}h, ${minutes}m`;
+        }
+    }
+
+    // ========== INITIALISIERUNG ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("[INIT] Initialisiere Scuffed Attack...");
+        
+        setupServerDataModal();
+        loadSpecialPlayersFromSheet();
+        showFullscreenPopup();
+        
+        checkServerStatus();
+        fetchPlayerCount();
+        
+        setInterval(() => {
+            checkServerStatus();
+            fetchPlayerCount();
+        }, 20000);
+        
+        setInterval(updateShutdownCountdown, 1000);
+        setInterval(updateDownloadCountdown, 1000);
+        
+        updateShutdownCountdown();
+        updateDownloadCountdown();
+        
+        fetch(CONFIG.API_URL)
+            .then(response => response.json())
+            .then(data => {
+                const versionElement = document.getElementById("server-version");
+                if (versionElement && data.online && data.version) {
+                    versionElement.textContent = data.version.name_clean || data.version.name_raw;
+                }
+            })
+            .catch(error => {
+                console.error("Fehler beim Abrufen der Minecraft-Version:", error);
+            });
+            
+        console.log("[INIT] Initialisierung abgeschlossen");
+    });
+
+    // ========== VERBLEIBENDE FUNKTIONEN ==========
+    function closeRegisteredPlayers() {
+        document.getElementById("registered-players-modal").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    }
+
+    function checkServerStatusAndUpdateMapButton() {
+        const mapButton = document.getElementById("map-button");
+        if (!mapButton) return;
+
+        const cached = getCachedData('serverStatus');
+        if (cached) {
+            updateMapButton(cached, mapButton);
+            return;
+        }
+
+        fetch(CONFIG.API_URL)
+            .then(response => response.json())
+            .then(data => {
+                updateMapButton(data, mapButton);
+            })
+            .catch(error => {
+                console.error("Fehler beim Abrufen des Serverstatus:", error);
+                mapButton.style.pointerEvents = "none";
+                mapButton.style.opacity = "0.5";
+                mapButton.style.cursor = "not-allowed";
+                mapButton.title = "Karte Offline";
+            });
+    }
+
+    function updateMapButton(data, button) {
+        if (data.online) {
+            button.style.pointerEvents = "auto";
+            button.style.opacity = "1";
+            button.style.cursor = "pointer";
+            button.title = "Karte öffnen";
+        } else {
+            button.style.pointerEvents = "none";
+            button.style.opacity = "0.5";
+            button.style.cursor = "not-allowed";
+            button.title = "Karte Offline";
+        }
+    }
+</script>
+</body>
+</html>

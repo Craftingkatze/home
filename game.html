@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Game</title>
+
+    <!-- Link to the local favicon -->
+    <link rel="icon" type="image/png" href="CC v2-1grau (1) - Kopie.png">
+
+    <!-- Stylesheet link -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Navigation bar -->
+  		<nav>
+      	  <a href="/" >Home</a>
+      	  <a href="/game"  class="active" >Game</a>
+      	  <a href="/wetter" >Wetter App</a> <!-- Added link to the weather app -->
+          <a href="/twitch">Twitch App</a>
+          <a href="/server">Scuffed Attack</a>
+          <a href="/flags">Flags</a>
+    	</nav>
+
+    <!-- Logo image for the page -->
+   
+
+    <!-- Internal style -->
+    <style>
+        /* Reset basic styles */
+        /* Reset basic styles */
+        /* Reset basic styles */
+        
+
+        /* Ensure the entire page takes full height */
+        html, body {
+            height: 100%;
+            
+        }
+		nav {
+ 			 background-color: #333;
+ 			 overflow: hidden;
+		}
+
+		nav a {
+ 			float: left;
+ 			display: block;
+ 			color: white;
+ 			text-align: center;
+ 			padding: 14px 16px;
+  			text-decoration: none;
+		}
+
+		nav a:hover {
+ 			 background-color: #ddd;
+  			 color: black;
+		}
+      
+      	* {
+            
+          
+            box-sizing: border-box;
+        }
+        /* Use flexbox to push the footer to the bottom */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+      
+        .impressum {
+            padding: 20px;
+            max-width: 500px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .centered-box {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            margin: auto;
+        }
+
+        .centered-box input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .centered-box button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .centered-box button:hover {
+            background-color: #218838;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Footer styles */
+        
+      	.project-button {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50; /* Green background */
+            color: white; /* White text */
+            text-decoration: none; /* No underline */
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s; /* Smooth transition */
+        }
+        .project-button:hover {
+            background-color: #45a049; /* Darker green on hover */
+        }
+    </style>
+
+    <!-- Password check script -->
+    <script>
+        function checkPassword() {
+            var password = document.getElementById('password').value;
+            if (password === 'Gamedownload') { // Replace with your actual password
+                document.getElementById('downloadLink').classList.remove('hidden');
+                document.getElementById('passwordInput').classList.add('hidden');
+            } else {
+                alert('Incorrect password, please try again.');
+            }
+        }
+    </script>
+</head>
+<body>
+  <br>
+  <header>
+    
+        <h1>Mein Spiel</h1>
+        <a href="https://craftingkatze.de" target="_self">
+            <img src="CC v2-1grau (1) - Kopie.png" alt="Craftingkatze Logo" class="logo" draggable="false">
+        </a>      </header>
+    <div id="passwordInput" class="centered-box">
+        <h2>Please enter the password to access the download link:</h2>
+        <input type="password" id="password" placeholder="Enter password">
+        <button onclick="checkPassword()">Submit</button>
+    </div>
+    
+    <div id="downloadLink" class="hidden">
+        <div class="impressum">
+            <p>Ich habe mein eigenes Spiel im Rahmen meiner Jahresarbeit an der Schule entwickelt und möchte es gerne mit anderen teilen. Über den untenstehenden Link kannst du das Spiel auf Google Drive finden. Viel Spaß beim Ausprobieren!</p>
+            <br />
+            <a href="https://drive.google.com/u/1/uc?id=1HIM4pH1EWdrZhNxTw5WecwZa93QP7Q19&export=download">
+                <button class="impressum">Download Game</button>
+            </a>
+        </div>
+    </div>
+
+    <!-- External script -->
+    <script>
+        (function(w, d) {
+            w.CollectId = "64fc5df117960a15b2336074";
+            var h = d.head || d.getElementsByTagName("head")[0];
+            var s = d.createElement("script");
+            s.setAttribute("type", "text/javascript");
+            s.async = true;
+            s.setAttribute("src", "https://collectcdn.com/launcher.js");
+            h.appendChild(s);
+        })(window, document);
+    </script>
+            <section class="description">
+    		<section class="projects">
+        		<h2>Meine Projekte</h2>
+        		<p>Dies ist ein teil meiner Projektereihe mit coolen und nützlichen kleinen Aplikationen. Schau sie dir gerne an:) </p>
+        		<div class="project-buttons">
+            	<a href="/#Projekte" class="project-button">Hier mehr!</a>
+              </div>
+        <br />
+   </section>         
+       
+    <br />
+              
+  </section>
+    <hr>
+    <!-- Footer section with links -->
+    <div class="footer">
+        <a href="/imp">Impressum</a>
+        <a href="/Datenschutzerklaerung">Datenschutzerklärung</a>
+    </div>
+</body>
+</html>

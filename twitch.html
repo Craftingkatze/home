@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="icon" type="image/png" href="CC v2-1grau (1) - Kopie.png">
+  		<nav>
+      	  <a href="/" >Home</a>
+      	  <a href="/wetter" >Wetter App</a> <!-- Added link to the weather app -->
+          <a href="/twitch" class="active">Twitch App</a>
+          <a href="/server">Scuffed Attack</a>
+          <a href="/flags">Flags</a>
+    	</nav>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Craftingkatze - Twitch</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .projects {
+            text-align: center;
+            color: white;
+        }
+
+        .project-buttons {
+            margin-top: 20px;
+        }
+
+        .project-button {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .project-button:hover {
+            background-color: #45a049;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden; /* Halte overflow hidden für die Lichtreflektion */
+            border-radius: 10px;
+            margin-bottom: 20px;
+            perspective: 1000px;
+            padding: 60px 20px; /* Mehr Padding oben und unten, um den Schatten nicht abzuschneiden */
+            background-color: white; /* Hintergrundfarbe für die Container */
+        }
+
+        .twitch-image {
+            width: 70%; /* Bildgröße etwas verkleinert */
+            max-width: 350px;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            border-radius: 10px;
+            box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.5); /* Schatten nach links unten geändert */
+        }
+
+        /* Lichtreflektion */
+        .light-reflection {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; /* Die Breite bleibt 100% */
+            height: 100%; /* Die Höhe bleibt 100% */
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15), transparent 60%);
+            opacity: 0.5;
+            pointer-events: none;
+            border-radius: 10px; /* Abrunden der Ecken */
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease;
+        }
+
+        .description {
+            margin: 20px 0;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .descriptionuno {
+            margin: 20px 0;
+            
+            color: #333;
+        }
+
+        .download-button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.2em;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .download-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const twitchImage = document.querySelector(".twitch-image");
+        const imageContainer = document.querySelector(".image-container");
+
+        // Lichtreflektion erstellen
+        const reflection = document.createElement("div");
+        reflection.classList.add("light-reflection");
+        imageContainer.appendChild(reflection);
+
+        // Mausbewegungen verfolgen und Reflexion aktualisieren
+        imageContainer.addEventListener("mousemove", (e) => {
+            const rect = imageContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+
+            // Reduzierung der Bewegung des Bildes
+            const rotateX = -y / 50; // Größerer Divisor für weniger Bewegung
+            const rotateY = x / 50;   // Größerer Divisor für weniger Bewegung
+
+            // Schattenanpassung: Schatten soll in die entgegengesetzte Richtung der Lichtquelle sein
+            const shadowX = -x / 10;  // Schatten nach links
+            const shadowY = -y / 10;   // Schatten nach oben (invertiert)
+
+            // Bild bleibt auf gleicher Größe bei Hover
+            twitchImage.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            twitchImage.style.boxShadow = `${shadowX}px ${shadowY}px 30px rgba(0, 0, 0, 0.6)`; // Schattenradius angepasst
+
+            // Reflexion folgt der Mausbewegung innerhalb des Containers
+            const reflectionX = (x / rect.width) * 50;
+            const reflectionY = (y / rect.height) * 50;
+            reflection.style.transform = `translate(${reflectionX}%, ${reflectionY}%)`;
+        });
+
+        // Bei Verlassen des Containers: Bild- und Reflexionseffekte zurücksetzen
+        imageContainer.addEventListener("mouseleave", () => {
+            twitchImage.style.transform = "rotateX(0) rotateY(0)";
+            twitchImage.style.boxShadow = "-10px 10px 30px rgba(0, 0, 0, 0.5)"; // Schattenradius zurückgesetzt
+            reflection.style.transform = "translate(-50%, -50%)"; // Reflexion bleibt sichtbar
+        });
+    });
+</script>
+
+
+
+</head>
+<body>
+    <header>
+        <h1>Twitch App</h1>
+        <a href="https://craftingkatze.de" target="_self">
+            <img src="CC v2-1grau (1) - Kopie.png" alt="Craftingkatze Logo" class="logo" draggable="false">
+        </a>      </header>
+
+    <main>
+        <div class="content">
+            <h1 class="descriptionuno">Meine Twitch App</h1>
+            <div class="description">
+                <p>
+                    Meine TwitchApp ist eine benutzerfreundliche Anwendung, die es Nutzern ermöglicht, Twitch-Streams und Chats mit Leichtigkeit zu öffnen und zu verwalten. Die App bietet eine einfache Oberfläche, auf der Benutzer mehrere Twitch-Benutzernamen eingeben können, um diese direkt zu öffnen. Die Anwendung bietet zusätzliche Optionen wie das Öffnen von Streams als Pop-up oder das direkte Öffnen nur des Chats, wodurch das Nutzererlebnis individuell angepasst werden kann. Mit einem Favoriten-Feature, das es den Nutzern ermöglicht, häufig besuchte Streams schnell zu laden, wird die Interaktion mit Twitch noch effizienter.
+                    <br><br>
+                    Die Benutzeroberfläche der TwitchApp zeichnet sich durch ein modernes, dunkles Design aus, das die Augen schont und gleichzeitig eine ansprechende Ästhetik bietet. Eine benutzerdefinierte Titelleiste ermöglicht es den Nutzern, das Fenster intuitiv zu schließen, während die Schaltflächen klare und anpassbare Funktionen bieten. Durch die Nutzung des standardmäßigen Chrome-Browsers für die Stream- und Chat-Anzeige wird sichergestellt, dass die Anwendung stabil und zuverlässig ist. Die TwitchApp ist damit ein nützliches Tool für alle Twitch-Nutzer, die ein optimiertes und personalisiertes Streaming-Erlebnis suchen. 
+                </p>
+            </div>
+            <div class="image-container">
+                <img src="twitchappbild1.png" alt="Twitch App Image" class="twitch-image" draggable="false">
+            </div>
+          <div class="description">
+         	 <p>Klicke hier, um die App schnell und unkompliziert auf deinem Gerät zu installieren – praktisch und immer griffbereit!</p>
+          </div>
+            <a href="/Vincentstwitchopener.exe" class="download-button" download>Download</a>
+        </div>
+    </main>
+    <section class="projects">
+        <h2>Meine Projekte</h2>
+        <p>Dies ist ein teil meiner Projektereihe mit coolen und nützlichen kleinen Aplikationen. Schau sie dir gerne an:) </p>
+        <div class="project-buttons">
+            <a href="/#Projekte" class="project-button">Hier mehr!</a>
+        </div>
+        <br />
+    </section>
+
+    <div class="footer">
+        <a href="/imp">Impressum</a>
+        <a href="/Datenschutzerklaerung">Datenschutzerklärung</a>
+    </div>
+    <br>
+</body>
+</html>

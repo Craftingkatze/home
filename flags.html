@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="icon" type="image/png" href="CC v2-1grau (1) - Kopie.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Trainer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="flags-style.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/wetter">Wetter App</a>
+        <a href="/twitch">Twitch App</a>
+        <a href="/server">Scuffed Attack</a>
+        <a href="/flags" class="active">Flags</a>
+    </nav>
+    <h1 class="quiz-title">Flaggen Quiz</h1>
+    <button id="fullscreen-btn">Go Fullscreen</button>
+
+    <div class="quiz-container">
+        <div class="flag-container">
+            <img src="" alt="Flag" class="flag-image" id="flag-image">
+        </div>
+        <div class="options" id="options"></div>
+    </div>
+    
+    <div class="quiz-controls">
+        <button id="finish-btn">Quiz beenden</button>
+    </div>
+    
+    <div class="stats-container">
+        <div class="percentage" id="percentage">
+            <span id="time-elapsed">0s</span> | 
+            <span id="progress">0 / 0</span> | 
+            <span id="score">0%</span>
+        </div>
+        <div class="wrong-answers" id="wrong-answers"></div>
+    </div>
+
+    <div class="footer">
+        <hr>
+        <a href="/imp">Impressum</a>
+        <a href="/Datenschutzerklaerung">Datenschutzerklärung</a>
+    </div>
+
+    <div class="popup" id="popup">
+        <div class="popup-content">
+            <h3>Ergebnisse</h3>
+            <div id="popup-content"></div>
+            <button onclick="restartQuiz()">Neues Quiz starten</button>
+        </div>
+    </div>
+
+    <script>
+        // Verbesserte API-Konfiguration
+        const API_CONFIG = {
+            baseUrl: 'https://countriesnow.space/api/v0.1/countries',
+            fallbackUrl: 'https://restcountries.com/v3.1/all'
+        };
+
+        // Quiz-Konfiguration
+        const QUIZ_CONFIG = {
+            totalQuestions: 20,
+            optionsPerQuestion: 4,
+            answerDelay: 1500,
+            maxRetries: 3
+        };
+
+        // Quiz-State
+        let quizState = {
+            countries: [],
+            usedCountries: new Set(),
+            wrongAnswers: [],
+            correctCount: 0,
+            totalAnswered: 0,
+            currentQuestion: 0,
+            startTime: null,
+            timerInterval: null,
+            isQuizActive: false
+        };
+
+        // DOM-Elemente
+        const elements = {
+            flagImage: document.getElementById('flag-image'),
+            options: document.getElementById('options'),
+            progress: document.getElementById('progress'),
+            timeElapsed: document.getElementById('time-elapsed'),
+            score: document.getElementById('score'),
+            wrongAnswers: document.getElementById('wrong-answers'),
+            popup: document.getElementById('popup'),
+            popupContent: document.getElementById('popup-content'),
+            finishBtn: document.getElementById('finish-btn'),
+            skipBtn: document.getElementById('skip-btn')
+        };
+
+        // Fullscreen-Funktionalität
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error('Fehler beim Aktivieren des Fullscreen-Modus:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function updateFullscreenButton() {
+            fullscreenBtn.textContent = document.fullscreenElement ? 
+                "Exit Fullscreen" : "Go Fullscreen";
+        }
+
+        fullscreenBtn.addEventListener('click', toggleFullScreen);
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'F11') {
+                event.preventDefault();
+                toggleFullScreen();
+            }
+        });
+
+        // API-Funktionen
+        async function fetchCountries() {
+            let countries = [];
+            let retries = 0;
+
+            while (retries < QUIZ_CONFIG.maxRetries && countries.length === 0) {
+                try {
+                    // Primäre API
+                    const response = await fetch(`${API_CONFIG.baseUrl}/flag/images`);
+                    const data = await response.json();
+                    
+                    if (data.data && data.data.length > 0) {
+                        countries = data.data.map(country => ({
+                            name: country.name,
+                            flag: country.flag
+                        })).filter(country => country.flag);
+                    }
+                } catch (error) {
+                    console.warn('Primäre API fehlgeschlagen, versuche Fallback:', error);
+                }
+
+                if (countries.length === 0) {
+                    // Fallback-API
+                    try {
+                        const fallbackResponse = await fetch(API_CONFIG.fallbackUrl);
+                        const fallbackData = await fallbackResponse.json();
+                        countries = fallbackData.map(country => ({
+                            name: country.name.common,
+                            flag: country.flags.png
+                        })).filter(country => country.flag);
+                    } catch (fallbackError) {
+                        console.error('Fallback API fehlgeschlagen:', fallbackError);
+                    }
+                }
+                
+                retries++;
+                if (countries.length === 0 && retries < QUIZ_CONFIG.maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+
+            return countries;
+        }
+
+        // Quiz-Funktionen
+        async function initializeQuiz() {
+            showLoadingState();
+            
+            try {
+                quizState.countries = await fetchCountries();
+                
+                if (quizState.countries.length === 0) {
+                    throw new Error('Keine Länderdaten verfügbar');
+                }
+
+                // Begrenze die Anzahl der Fragen
+                if (quizState.countries.length > QUIZ_CONFIG.totalQuestions) {
+                    quizState.countries = quizState.countries
+                        .sort(() => Math.random() - 0.5)
+                        .slice(0, QUIZ_CONFIG.totalQuestions);
+                }
+
+                startQuiz();
+            } catch (error) {
+                showError('Fehler beim Laden der Flaggen. Bitte versuche es später erneut.');
+                console.error('Initialisierungsfehler:', error);
+            }
+        }
+
+        function startQuiz() {
+            resetQuizState();
+            quizState.isQuizActive = true;
+            startTimer();
+            showNextQuestion();
+            
+            // Event Listener
+            elements.finishBtn.addEventListener('click', finishQuiz);
+            elements.skipBtn.addEventListener('click', skipQuestion);
+        }
+
+        function showNextQuestion() {
+            if (!quizState.isQuizActive || quizState.currentQuestion >= quizState.countries.length) {
+                finishQuiz();
+                return;
+            }
+
+            const currentCountry = quizState.countries[quizState.currentQuestion];
+            elements.flagImage.src = currentCountry.flag;
+            elements.flagImage.alt = `Flagge von ${currentCountry.name}`;
+
+            generateOptions(currentCountry.name);
+            updateProgress();
+        }
+
+        function generateOptions(correctAnswer) {
+            elements.options.innerHTML = '';
+            const options = new Set([correctAnswer]);
+
+            // Zufällige Optionen generieren
+            while (options.size < QUIZ_CONFIG.optionsPerQuestion) {
+                const randomCountry = quizState.countries[
+                    Math.floor(Math.random() * quizState.countries.length)
+                ];
+                if (randomCountry.name !== correctAnswer) {
+                    options.add(randomCountry.name);
+                }
+            }
+
+            // Optionen mischen und anzeigen
+            const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
+            
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.textContent = option;
+                button.addEventListener('click', () => handleAnswer(button, correctAnswer));
+                elements.options.appendChild(button);
+            });
+        }
+
+        function handleAnswer(selectedButton, correctAnswer) {
+            if (!quizState.isQuizActive) return;
+
+            const allButtons = elements.options.querySelectorAll('.option-button');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            const isCorrect = selectedButton.textContent === correctAnswer;
+            
+            if (isCorrect) {
+                selectedButton.classList.add('correct');
+                quizState.correctCount++;
+            } else {
+                selectedButton.classList.add('wrong');
+                quizState.wrongAnswers.push({
+                    country: correctAnswer,
+                    selected: selectedButton.textContent
+                });
+                
+                // Richtige Antwort markieren
+                allButtons.forEach(btn => {
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.add('highlight-correct');
+                    }
+                });
+            }
+
+            quizState.totalAnswered++;
+            quizState.currentQuestion++;
+
+            setTimeout(() => {
+                if (quizState.isQuizActive) {
+                    showNextQuestion();
+                }
+            }, QUIZ_CONFIG.answerDelay);
+        }
+
+        function skipQuestion() {
+            if (!quizState.isQuizActive) return;
+            
+            quizState.wrongAnswers.push({
+                country: quizState.countries[quizState.currentQuestion].name,
+                selected: 'Übersprungen'
+            });
+            
+            quizState.currentQuestion++;
+            quizState.totalAnswered++;
+            showNextQuestion();
+        }
+
+        function finishQuiz() {
+            quizState.isQuizActive = false;
+            clearInterval(quizState.timerInterval);
+            showResults();
+        }
+
+        function showResults() {
+            const percentage = quizState.totalAnswered > 0 ? 
+                (quizState.correctCount / quizState.totalAnswered) * 100 : 0;
+            const elapsedTime = Math.floor((Date.now() - quizState.startTime) / 1000);
+
+            const resultsHTML = `
+                <p>Du hast ${quizState.correctCount} von ${quizState.totalAnswered} richtig beantwortet.</p>
+                <p class="percentage-score">${percentage.toFixed(1)}%</p>
+                <p>Gesamtzeit: ${elapsedTime}s</p>
+                
+                ${quizState.wrongAnswers.length > 0 ? `
+                    <h4>Falsche Antworten:</h4>
+                    <ul class="wrong-answers-list">
+                        ${quizState.wrongAnswers.map(item => `
+                            <li>
+                                <strong>${item.country}</strong>
+                                ${item.selected !== 'Übersprungen' ? `(Deine Antwort: ${item.selected})` : '(Übersprungen)'}
+                            </li>
+                        `).join('')}
+                    </ul>
+                ` : '<p class="perfect-score">Perfekte Leistung! 🎉</p>'}
+            `;
+
+            elements.popupContent.innerHTML = resultsHTML;
+            elements.popup.classList.add('show');
+        }
+
+        function restartQuiz() {
+            elements.popup.classList.remove('show');
+            initializeQuiz();
+        }
+
+        // Timer-Funktionen
+        function startTimer() {
+            quizState.startTime = Date.now();
+            quizState.timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (!quizState.startTime) return;
+            const elapsedTime = Math.floor((Date.now() - quizState.startTime) / 1000);
+            elements.timeElapsed.textContent = `${elapsedTime}s`;
+        }
+
+        function resetTimer() {
+            clearInterval(quizState.timerInterval);
+            quizState.timerInterval = null;
+            quizState.startTime = null;
+            elements.timeElapsed.textContent = "0s";
+        }
+
+        // Hilfsfunktionen
+        function updateProgress() {
+            const percentage = quizState.totalAnswered > 0 ? 
+                Math.round((quizState.correctCount / quizState.totalAnswered) * 100) : 0;
+            
+            elements.progress.textContent = `${quizState.currentQuestion + 1} / ${quizState.countries.length}`;
+            elements.score.textContent = `${percentage}%`;
+        }
+
+        function resetQuizState() {
+            quizState.usedCountries.clear();
+            quizState.wrongAnswers = [];
+            quizState.correctCount = 0;
+            quizState.totalAnswered = 0;
+            quizState.currentQuestion = 0;
+            quizState.isQuizActive = false;
+            
+            resetTimer();
+            updateProgress();
+        }
+
+        function showLoadingState() {
+            elements.flagImage.src = '';
+            elements.options.innerHTML = '<div class="loading">Lädt Flaggen...</div>';
+            elements.progress.textContent = '0 / 0';
+            elements.score.textContent = '0%';
+        }
+
+        function showError(message) {
+            elements.options.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', initializeQuiz);
+
+        // Error Handling für Bild-Ladefehler
+        elements.flagImage.addEventListener('error', function() {
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZsYWdnZSBuaWNodCB2ZXJmw7xnYmFyPC90ZXh0Pjwvc3ZnPg==';
+        });
+    </script>
+</body>
+</html>

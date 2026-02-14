@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="icon" type="image/png" href="CC v2-1grau (1) - Kopie.png">
+    <nav>
+        <a href="/" >Home</a>
+        <a href="/wetter" >Wetter App</a>
+        <a href="/twitch">Twitch App</a>
+        <a href="/server">Scuffed Attack</a>
+        <a href="/flags">Flags</a>
+        <a href="/nummer" class="active">QR Code Generator</a>
+    </nav>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="server-style.css">
+    <style>
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select, button, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .output {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .server-cardeins {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            border: 2px solid #4CAF50;
+            color: #4CAF50;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            min-width: 250px;
+            text-align: center;
+        }
+        .server-cardeins:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="card-textzwei">QR Code Generator</h1>
+        <a href="https://craftingkatze.de" target="_">
+            <img src="CC v2-1grau (1) - Kopie.png" alt="Craftingkatze Logo" class="logo" draggable="false">
+        </a>        
+    </header>
+    <br>
+    <div class="container">
+        <label for="qrType">QR-Code Typ</label>
+        <select id="qrType">
+            <option value="text">Text</option>
+            <option value="url">URL</option>
+            <option value="email">E-Mail</option>
+            <option value="phone">Telefonnummer</option>
+        </select>
+
+        <!-- Allgemeine Daten-Eingabe -->
+        <label for="data">Daten für QR-Code</label>
+        <input type="text" id="data" name="data" placeholder="Geben Sie die Daten ein">
+
+        <!-- Zusätzliche Felder für E-Mail -->
+        <div id="emailFields" class="hidden">
+            <label for="emailSubject">Betreff</label>
+            <input type="text" id="emailSubject" placeholder="Betreff der E-Mail">
+            <label for="emailBody">Nachricht</label>
+            <textarea id="emailBody" placeholder="Nachricht der E-Mail"></textarea>
+        </div>
+
+        <!-- Zusätzliche Felder für Telefon -->
+        <div id="phoneFields" class="hidden">
+            <label for="phoneDescription">Beschreibung</label>
+            <input type="text" id="phoneDescription" placeholder="Beschreibung der Telefonnummer">
+        </div>
+
+        <button class="server-cardeins" id="generateBtn" onclick="generateQRCode()">QR-Code generieren und drucken</button>
+
+        <div class="output" id="output"></div>
+
+        <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script>
+            // Zeige/Verstecke zusätzliche Felder basierend auf dem ausgewählten QR-Code-Typ
+            document.getElementById('qrType').addEventListener('change', function () {
+                const qrType = this.value;
+                document.getElementById('emailFields').classList.add('hidden');
+                document.getElementById('phoneFields').classList.add('hidden');
+
+                if (qrType === 'email') {
+                    document.getElementById('emailFields').classList.remove('hidden');
+                } else if (qrType === 'phone') {
+                    document.getElementById('phoneFields').classList.remove('hidden');
+                }
+            });
+
+            function generateQRCode() {
+                const qrType = document.getElementById('qrType').value;
+                const data = document.getElementById('data').value;
+
+                if (!data) {
+                    alert("Bitte geben Sie Daten für den QR-Code ein.");
+                    return;
+                }
+
+                let qrData;
+                switch (qrType) {
+                    case 'url':
+                        qrData = data.startsWith('http') ? data : `https://${data}`;
+                        break;
+                    case 'email':
+                        const emailSubject = document.getElementById('emailSubject').value;
+                        const emailBody = document.getElementById('emailBody').value;
+                        qrData = `mailto:${data}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+                        break;
+                    case 'phone':
+                        const phoneDescription = document.getElementById('phoneDescription').value;
+                        qrData = `tel:${data}`;
+                        if (phoneDescription) {
+                            qrData += ` (${phoneDescription})`;
+                        }
+                        break;
+                    default:
+                        qrData = data;
+                        break;
+                }
+
+                QRCode.toDataURL(qrData, { width: 200, height: 200 }, function (err, url) {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        const output = document.getElementById('output');
+                        output.innerHTML = `<img src="${url}" alt="QR Code">`;
+                        createPDF(url, qrData, qrType);
+                    }
+                });
+            }
+
+            function createPDF(qrCodeUrl, qrData, qrType) {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('landscape', 'mm', [60, 40]); // 60x40 mm Querformat
+
+                // QR-Code einfügen (quadratisches Format, 40x40 mm)
+                doc.addImage(qrCodeUrl, 'PNG', 0, 0, 40, 40); // QR-Code positionieren
+
+                // Text unter dem QR-Code
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+
+                // Zusätzliche Informationen basierend auf dem QR-Code-Typ
+                if (qrType === 'email') {
+                    const emailSubject = document.getElementById('emailSubject').value;
+                    const emailBody = document.getElementById('emailBody').value;
+                    doc.text(`E-Mail: ${data}`, 10, 48, { maxWidth: 50 });
+                    doc.text(`Betreff: ${emailSubject}`, 10, 51, { maxWidth: 50 });
+                    doc.text(`Nachricht: ${emailBody}`, 10, 54, { maxWidth: 50 });
+                } else if (qrType === 'phone') {
+                    const phoneDescription = document.getElementById('phoneDescription').value;
+                    doc.text(`Telefon: ${data}`, 10, 48, { maxWidth: 50 });
+                    if (phoneDescription) {
+                        doc.text(`Beschreibung: ${phoneDescription}`, 10, 51, { maxWidth: 50 });
+                    }
+                } else {
+                    doc.text(qrData, 10, 48, { maxWidth: 50 });
+                }
+
+                // PDF öffnen und drucken
+                doc.autoPrint();
+                window.open(doc.output('bloburl'), '_blank');
+            }
+        </script>
+    </div>
+    <br>
+    <footer>
+        <hr>
+        <div class="footer">
+            <a href="/imp">Impressum</a>
+            <a href="/Datenschutzerklaerung">Datenschutzerklärung</a>
+        </div>
+        <br>
+    </footer>
+</body>
+</html>

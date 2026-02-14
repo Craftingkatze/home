@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartenziehung-Simulation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #bdc3c7;
+            font-size: 1.2rem;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2c3e50;
+        }
+        
+        .panel h2 {
+            color: #3498db;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button#stopBtn {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+        
+        button#stopBtn:hover {
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        button#resetBtn {
+            background: linear-gradient(90deg, #f39c12, #d35400);
+        }
+        
+        button#resetBtn:hover {
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        }
+        
+        .current-hand {
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #34495e;
+        }
+        
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .card {
+            width: 70px;
+            height: 100px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #2c3e50;
+            font-weight: bold;
+            font-size: 1.8rem;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        .card.win {
+            box-shadow: 0 0 15px #2ecc71;
+            border: 2px solid #2ecc71;
+        }
+        
+        .card.lose {
+            box-shadow: 0 0 15px #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+        
+        .result-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .win-text {
+            color: #2ecc71;
+        }
+        
+        .lose-text {
+            color: #e74c3c;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: rgba(52, 152, 219, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #3498db;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+        }
+        
+        .error-box {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .chart-container {
+            height: 400px;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .rules {
+            margin-top: 30px;
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .rules h2 {
+            color: #2ecc71;
+            margin-bottom: 15px;
+        }
+        
+        .rules ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        
+        .rules li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .rules li:before {
+            content: "•";
+            color: #3498db;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: -5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #34495e;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .speed-control {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .speed-control label {
+            font-weight: bold;
+        }
+        
+        .speed-control input {
+            width: 200px;
+        }
+        
+        .exact-prob {
+            color: #f1c40f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kartenziehung-Simulation</h1>
+            <p class="subtitle">Wahrscheinlichkeit berechnen, dass zwei Karten eine Differenz ≤ 2 haben</p>
+        </header>
+        
+        <div class="content">
+            <div class="panel">
+                <h2>Simulation & Steuerung</h2>
+                
+                <div class="controls">
+                    <button id="startBtn">Start Simulation</button>
+                    <button id="stopBtn">Stopp</button>
+                    <button id="resetBtn">Zurücksetzen</button>
+                </div>
+                
+                <div class="speed-control">
+                    <label for="speed">Geschwindigkeit:</label>
+                    <input type="range" id="speed" min="1" max="20" value="10">
+                    <span id="speedValue">Mittel</span>
+                </div>
+                
+                <div class="current-hand">
+                    <h3>Aktuelle Ziehung</h3>
+                    <div class="cards" id="currentCards">
+                        <div class="card">-</div>
+                        <div class="card">-</div>
+                        <div class="card">-</div>
+                    </div>
+                    <div class="result-text" id="resultText">Bereit zum Starten...</div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Ziehungen</div>
+                        <div class="stat-value" id="totalDraws">0</div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <div class="stat-label">Gewinne</div>
+                        <div class="stat-value" id="totalWins">0</div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <div class="stat-label">Aktuelle Wahrscheinlichkeit</div>
+                        <div class="stat-value" id="currentProb">0.00%</div>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <div class="stat-label">Exakte Wahrscheinlichkeit</div>
+                        <div class="stat-value" id="exactProb">17.87%</div>
+                    </div>
+                </div>
+                
+                <div class="error-box">
+                    <div class="stat-label">Aktueller Fehler</div>
+                    <div class="stat-value" id="currentError">0.00%</div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2>Wahrscheinlichkeitsverlauf</h2>
+                <div class="chart-container">
+                    <canvas id="probabilityChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="rules">
+            <h2>Spielregeln & Erklärung</h2>
+            <ul>
+                <li>Es gibt 64 Karten mit den Nummern 1 bis 64</li>
+                <li>Bei jeder Ziehung werden 3 zufällige Karten gezogen (ohne Zurücklegen)</li>
+                <li><strong>Gewinnbedingung:</strong> Mindestens zwei Karten haben eine Differenz von 1 oder 2 (z.B. 5 und 7, oder 12 und 13)</li>
+                <li>Die <span class="exact-prob">exakte Wahrscheinlichkeit</span> zu gewinnen beträgt <span class="exact-prob">17,87%</span> (1861/10416)</li>
+                <li>Die Simulation zieht kontinuierlich Karten und zeigt, wie sich die experimentelle Wahrscheinlichkeit der exakten annähert</li>
+                <li>Je mehr Ziehungen, desto genauer wird die experimentelle Schätzung (Gesetz der großen Zahlen)</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>Simulation der Wahrscheinlichkeit für Kartenziehung | Erstellt mit HTML, CSS, JavaScript & Chart.js</p>
+        </footer>
+    </div>
+
+    <script>
+        // Konstanten
+        const EXACT_PROBABILITY = 7444 / 41664; // ≈ 0.17866
+        const DECK_SIZE = 64;
+        const HAND_SIZE = 3;
+        
+        // Globale Variablen
+        let simulationInterval;
+        let totalDraws = 0;
+        let totalWins = 0;
+        let probabilities = [];
+        let drawsHistory = [];
+        let isRunning = false;
+        let simulationSpeed = 10;
+        
+        // DOM Elemente
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const speedSlider = document.getElementById('speed');
+        const speedValue = document.getElementById('speedValue');
+        const totalDrawsEl = document.getElementById('totalDraws');
+        const totalWinsEl = document.getElementById('totalWins');
+        const currentProbEl = document.getElementById('currentProb');
+        const exactProbEl = document.getElementById('exactProb');
+        const currentErrorEl = document.getElementById('currentError');
+        const resultText = document.getElementById('resultText');
+        const currentCards = document.getElementById('currentCards');
+        
+        // Chart.js Initialisierung
+        const ctx = document.getElementById('probabilityChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Experimentelle Wahrscheinlichkeit',
+                        data: [],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Exakte Wahrscheinlichkeit',
+                        data: [],
+                        borderColor: '#f1c40f',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += (context.parsed.y * 100).toFixed(2) + '%';
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Anzahl der Ziehungen',
+                            color: '#bdc3c7'
+                        },
+                        ticks: {
+                            color: '#bdc3c7'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Wahrscheinlichkeit',
+                            color: '#bdc3c7'
+                        },
+                        ticks: {
+                            color: '#bdc3c7',
+                            callback: function(value) {
+                                return (value * 100).toFixed(0) + '%';
+                            }
+                        },
+                        min: 0,
+                        max: 0.5,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Funktionen
+        function initDeck() {
+            // Erstellt ein Deck mit Zahlen von 1 bis 64
+            const deck = [];
+            for (let i = 1; i <= DECK_SIZE; i++) {
+                deck.push(i);
+            }
+            return deck;
+        }
+        
+        function drawRandomHand() {
+            const deck = initDeck();
+            const hand = [];
+            
+            // Ziehe 3 zufällige Karten ohne Zurücklegen
+            for (let i = 0; i < HAND_SIZE; i++) {
+                const randomIndex = Math.floor(Math.random() * deck.length);
+                hand.push(deck.splice(randomIndex, 1)[0]);
+            }
+            
+            // Sortiere die Hand
+            hand.sort((a, b) => a - b);
+            return hand;
+        }
+        
+        function isWinningHand(hand) {
+            // Prüft, ob mindestens zwei Karten eine Differenz ≤ 2 haben
+            for (let i = 0; i < hand.length; i++) {
+                for (let j = i + 1; j < hand.length; j++) {
+                    if (Math.abs(hand[i] - hand[j]) <= 2) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        function runSimulationStep() {
+            // Führt einen Simulationsschritt durch
+            const hand = drawRandomHand();
+            const isWin = isWinningHand(hand);
+            
+            // Aktualisiere Statistiken
+            totalDraws++;
+            if (isWin) totalWins++;
+            
+            const currentProbability = totalWins / totalDraws;
+            probabilities.push(currentProbability);
+            drawsHistory.push(totalDraws);
+            
+            // Aktualisiere die Anzeige
+            updateDisplay(hand, isWin, currentProbability);
+            
+            // Aktualisiere das Diagramm (nicht bei jedem Schritt, um Performance zu schonen)
+            if (totalDraws % Math.max(1, Math.floor(20 / simulationSpeed)) === 0 || totalDraws <= 100) {
+                updateChart();
+            }
+        }
+        
+        function updateDisplay(hand, isWin, currentProbability) {
+            // Aktualisiere die Zahlen
+            totalDrawsEl.textContent = totalDraws.toLocaleString();
+            totalWinsEl.textContent = totalWins.toLocaleString();
+            
+            const currentProbPercent = (currentProbability * 100).toFixed(2);
+            currentProbEl.textContent = `${currentProbPercent}%`;
+            
+            const exactProbPercent = (EXACT_PROBABILITY * 100).toFixed(2);
+            exactProbEl.textContent = `${exactProbPercent}%`;
+            
+            const errorPercent = Math.abs(currentProbability - EXACT_PROBABILITY) * 100;
+            currentErrorEl.textContent = `${errorPercent.toFixed(2)}%`;
+            
+            // Aktualisiere die Kartenanzeige
+            currentCards.innerHTML = '';
+            hand.forEach(cardValue => {
+                const card = document.createElement('div');
+                card.className = `card ${isWin ? 'win' : 'lose'}`;
+                card.textContent = cardValue;
+                currentCards.appendChild(card);
+            });
+            
+            // Aktualisiere das Ergebnis-Text
+            resultText.textContent = isWin ? 'GEWONNEN!' : 'Verloren';
+            resultText.className = `result-text ${isWin ? 'win-text' : 'lose-text'}`;
+        }
+        
+        function updateChart() {
+            // Beschränke die Anzahl der angezeigten Punkte für bessere Performance
+            const maxPoints = 200;
+            let step = 1;
+            
+            if (drawsHistory.length > maxPoints) {
+                step = Math.floor(drawsHistory.length / maxPoints);
+            }
+            
+            const filteredDraws = drawsHistory.filter((_, index) => index % step === 0);
+            const filteredProbs = probabilities.filter((_, index) => index % step === 0);
+            
+            // Aktualisiere das Diagramm
+            chart.data.labels = filteredDraws;
+            chart.data.datasets[0].data = filteredProbs;
+            
+            // Füge die exakte Wahrscheinlichkeit als konstante Linie hinzu
+            const exactData = filteredDraws.map(() => EXACT_PROBABILITY);
+            chart.data.datasets[1].data = exactData;
+            
+            chart.update('none');
+        }
+        
+        function startSimulation() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            
+            // Berechne das Intervall basierend auf der Geschwindigkeit
+            const interval = Math.max(10, 200 - (simulationSpeed * 10));
+            
+            simulationInterval = setInterval(() => {
+                // Führe mehrere Schritte auf einmal aus, wenn die Geschwindigkeit hoch ist
+                const steps = Math.min(10, Math.floor(simulationSpeed / 5) + 1);
+                for (let i = 0; i < steps; i++) {
+                    runSimulationStep();
+                }
+            }, interval);
+        }
+        
+        function stopSimulation() {
+            if (!isRunning) return;
+            
+            isRunning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            
+            clearInterval(simulationInterval);
+        }
+        
+        function resetSimulation() {
+            stopSimulation();
+            
+            totalDraws = 0;
+            totalWins = 0;
+            probabilities = [];
+            drawsHistory = [];
+            
+            // Zurücksetzen der Anzeige
+            totalDrawsEl.textContent = '0';
+            totalWinsEl.textContent = '0';
+            currentProbEl.textContent = '0.00%';
+            currentErrorEl.textContent = '0.00%';
+            
+            currentCards.innerHTML = `
+                <div class="card">-</div>
+                <div class="card">-</div>
+                <div class="card">-</div>
+            `;
+            
+            resultText.textContent = 'Bereit zum Starten...';
+            resultText.className = 'result-text';
+            
+            // Diagramm zurücksetzen
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+            chart.data.datasets[1].data = [];
+            chart.update();
+        }
+        
+        function updateSpeedDisplay() {
+            simulationSpeed = parseInt(speedSlider.value);
+            
+            // Beschreibungstext basierend auf Geschwindigkeit
+            let speedText = 'Langsam';
+            if (simulationSpeed > 15) speedText = 'Sehr schnell';
+            else if (simulationSpeed > 10) speedText = 'Schnell';
+            else if (simulationSpeed > 5) speedText = 'Mittel';
+            
+            speedValue.textContent = speedText;
+            
+            // Wenn die Simulation läuft, neu starten mit neuer Geschwindigkeit
+            if (isRunning) {
+                stopSimulation();
+                startSimulation();
+            }
+        }
+        
+        // Event Listener
+        startBtn.addEventListener('click', startSimulation);
+        stopBtn.addEventListener('click', stopSimulation);
+        resetBtn.addEventListener('click', resetSimulation);
+        speedSlider.addEventListener('input', updateSpeedDisplay);
+        
+        // Initialisierung
+        function init() {
+            stopBtn.disabled = true;
+            speedSlider.value = 10;
+            updateSpeedDisplay();
+            
+            // Zeige die exakte Wahrscheinlichkeit an
+            exactProbEl.textContent = `${(EXACT_PROBABILITY * 100).toFixed(2)}%`;
+            
+            // Initialisiere das Diagramm mit einigen Datenpunkten
+            updateChart();
+        }
+        
+        // Starte die Initialisierung, wenn die Seite geladen ist
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

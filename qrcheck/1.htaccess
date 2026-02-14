@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteBase /qrcheck/
+RewriteRule ^([0-9]+)$ qrcheck.php?seriennummer=$1 [L]

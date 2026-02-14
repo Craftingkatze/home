@@ -1,0 +1,70 @@
+[
+    {
+        "name": "Vincent Pc",
+        "gamesPlayed": 1,
+        "wins": 0,
+        "totalPairs": 20,
+        "winRate": 0,
+        "avgPairs": 20,
+        "lastPlayed": "2026-01-17 23:50:43"
+    },
+    {
+        "name": "Benjamin ",
+        "gamesPlayed": 4,
+        "wins": 2,
+        "totalPairs": 63,
+        "winRate": 50,
+        "avgPairs": 15.75,
+        "lastPlayed": "2026-01-18 13:21:35",
+        "bestTime": 171,
+        "totalTime": 171,
+        "avgTime": 85.5,
+        "totalClicks": 0,
+        "avgClicks": 0
+    },
+    {
+        "name": "Vincent ",
+        "gamesPlayed": 1,
+        "wins": 1,
+        "totalPairs": 32,
+        "winRate": 100,
+        "avgPairs": 32,
+        "bestTime": 649,
+        "totalTime": 649,
+        "avgTime": 649,
+        "lastPlayed": "2026-01-18 00:09:39"
+    },
+    {
+        "name": "Vini",
+        "gamesPlayed": 2,
+        "wins": 2,
+        "totalPairs": 0,
+        "totalClicks": 0,
+        "winRate": 100,
+        "avgPairs": 0,
+        "avgClicks": 0,
+        "lastPlayed": "2026-01-18 13:21:35"
+    },
+    {
+        "name": "Test",
+        "gamesPlayed": 2,
+        "wins": 2,
+        "totalPairs": 0,
+        "totalClicks": 0,
+        "winRate": 100,
+        "avgPairs": 0,
+        "avgClicks": 0,
+        "lastPlayed": "2026-01-18 13:23:38"
+    },
+    {
+        "name": "G",
+        "gamesPlayed": 1,
+        "wins": 1,
+        "totalPairs": 0,
+        "totalClicks": 0,
+        "winRate": 100,
+        "avgPairs": 0,
+        "avgClicks": 0,
+        "lastPlayed": "2026-01-18 13:36:10"
+    }
+]

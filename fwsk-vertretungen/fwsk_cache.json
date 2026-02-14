@@ -1,0 +1,330 @@
+{
+    "school": "Freie Waldorfschule Kreuzberg e.V.",
+    "date": "2025-12-14",
+    "timestamp": "14.12.2025 10:21:26",
+    "fetch_timestamp": "2025-12-15T10:21:26+01:00",
+    "url": "https:\/\/fwsk.edupage.org\/substitution\/",
+    "classes": [
+        {
+            "class": "Klasse 3b",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "10:10-10:55, Zweite Gruppe: Handarbeit - Vertretung",
+                    "time": "10:10-10:55",
+                    "subject": "Zweite Gruppe: Handarbeit"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 3B",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "10:10-10:55, Zweite Gruppe: Handarbeit - Vertretung",
+                    "time": "10:10-10:55",
+                    "subject": "Zweite Gruppe: Handarbeit"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 4a",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "11:05-11:50, Zweite Gruppe: Sport - Vertretung",
+                    "time": "11:05-11:50",
+                    "subject": "Zweite Gruppe: Sport"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 4b",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "08:00-09:45, Hauptunterricht - Vertretung",
+                    "time": "08:00-09:45",
+                    "subject": "Hauptunterricht"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "10:10-10:55, Erste Gruppe: Sport - Vertretung",
+                    "time": "10:10-10:55",
+                    "subject": "Erste Gruppe: Sport"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 4B",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "10:10-10:55, Erste Gruppe: Sport - Vertretung",
+                    "time": "10:10-10:55",
+                    "subject": "Erste Gruppe: Sport"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 5a",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "13:45-15:20, Zweite Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "13:45-15:20",
+                    "subject": "Zweite Gruppe: Handarbeit\/Werken"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 5b",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "13:45-15:20, Zweite Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "13:45-15:20",
+                    "subject": "Zweite Gruppe: Handarbeit\/Werken"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 6a",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "10:10-10:55, Erste Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "10:10-10:55",
+                    "subject": "Erste Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "11:05-11:50, Zweite Gruppe: Musik getrennt - Vertretung",
+                    "time": "11:05-11:50",
+                    "subject": "Zweite Gruppe: Musik getrennt"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "11:05-11:50, Erste Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "11:05-11:50",
+                    "subject": "Erste Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "13:45-14:30, Zweite Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "13:45-14:30",
+                    "subject": "Zweite Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "14:35-15:20, Zweite Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "14:35-15:20",
+                    "subject": "Zweite Gruppe: Handarbeit\/Werken"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 6b",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "10:10-10:55, Erste Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "10:10-10:55",
+                    "subject": "Erste Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "11:05-11:50, Erste Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "11:05-11:50",
+                    "subject": "Erste Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "13:45-14:30, Zweite Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "13:45-14:30",
+                    "subject": "Zweite Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "14:35-15:20, Zweite Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "14:35-15:20",
+                    "subject": "Zweite Gruppe: Handarbeit\/Werken"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 6B",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "10:10-10:55, Erste Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "10:10-10:55",
+                    "subject": "Erste Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "11:05-11:50, Erste Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "11:05-11:50",
+                    "subject": "Erste Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "13:45-14:30, Zweite Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "13:45-14:30",
+                    "subject": "Zweite Gruppe: Handarbeit\/Werken"
+                },
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "14:35-15:20, Zweite Gruppe: Handarbeit\/Werken - Vertretung",
+                    "time": "14:35-15:20",
+                    "subject": "Zweite Gruppe: Handarbeit\/Werken"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 7a",
+            "changes": [
+                {
+                    "type": "remove",
+                    "change_type": "Entfällt",
+                    "period": "",
+                    "info": "08:00-08:45, Erste Gruppe: Musik getrennt - Entfällt",
+                    "time": "08:00-08:45",
+                    "subject": "Erste Gruppe: Musik getrennt"
+                },
+                {
+                    "type": "remove",
+                    "change_type": "Entfällt",
+                    "period": "",
+                    "info": "13:45-14:30, Zweite Gruppe: Musik getrennt - Entfällt",
+                    "time": "13:45-14:30",
+                    "subject": "Zweite Gruppe: Musik getrennt"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 7b",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "09:00-09:45, Zweite Gruppe: Musik getrennt - Vertretung",
+                    "time": "09:00-09:45",
+                    "subject": "Zweite Gruppe: Musik getrennt"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 7B",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "09:00-09:45, Zweite Gruppe: Musik getrennt - Vertretung",
+                    "time": "09:00-09:45",
+                    "subject": "Zweite Gruppe: Musik getrennt"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 8a",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "08:00-09:45, WE: KPE 8 - Vertretung",
+                    "time": "08:00-09:45",
+                    "subject": "WE: KPE 8"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 8b",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "08:00-09:45, WE: KPE 8 - Vertretung",
+                    "time": "08:00-09:45",
+                    "subject": "WE: KPE 8"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 8B",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "08:00-09:45, WE: KPE 8 - Vertretung",
+                    "time": "08:00-09:45",
+                    "subject": "WE: KPE 8"
+                }
+            ]
+        },
+        {
+            "class": "Klasse 9b",
+            "changes": [
+                {
+                    "type": "change",
+                    "change_type": "Vertretung",
+                    "period": "",
+                    "info": "10:10-10:55, Erste Gruppe: Musik getrennt - Vertretung",
+                    "time": "10:10-10:55",
+                    "subject": "Erste Gruppe: Musik getrennt"
+                }
+            ]
+        }
+    ],
+    "summary": {
+        "total_classes": 17,
+        "total_changes": 29
+    }
+}

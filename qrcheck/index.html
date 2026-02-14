@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR-Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        .serial {
+            font-size: 20px;
+            color: #007bff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Willkommen bei QR-Check</h1>
+    <p>Die Seriennummer aus der URL lautet:</p>
+    <p class="serial" id="serial-number">Lade...</p>
+
+    <script>
+        // Funktion, um die Seriennummer aus der URL zu extrahieren
+        function getSerialNumber() {
+            // Aktuelle URL abrufen
+            const path = window.location.pathname;
+            // Seriennummer aus "/qrcheck/seriennummer" extrahieren
+            const match = path.match(/\/qrcheck\/([^/]+)/);
+            // Wenn gefunden, zurückgeben, sonst "Keine Seriennummer"
+            return match ? match[1] : "Keine Seriennummer gefunden";
+        }
+
+        // Seriennummer in die Seite einfügen
+        document.getElementById('serial-number').textContent = getSerialNumber();
+    </script>
+</body>
+</html>

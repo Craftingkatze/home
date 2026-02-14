@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>U2 Abfahrten - Bülowstr.</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basis-Einstellungen für prozentuale Größen */
+        :root {
+            /* Dynamische Größeneinheiten basierend auf Viewport */
+            --vh: 1vh;
+            --vw: 1vw;
+            --vmin: 1vmin;
+            --vmax: 1vmax;
+            
+            /* Responsive Schriftgrößen */
+            --font-size-xs: calc(12px + 0.5vw);
+            --font-size-sm: calc(14px + 0.8vw);
+            --font-size-base: calc(16px + 1vw);
+            --font-size-lg: calc(18px + 1.2vw);
+            --font-size-xl: calc(20px + 1.5vw);
+            --font-size-xxl: calc(24px + 2vw);
+            
+            /* Responsive Abstände */
+            --space-xs: calc(4px + 0.5vmin);
+            --space-sm: calc(8px + 1vmin);
+            --space-md: calc(12px + 1.5vmin);
+            --space-lg: calc(16px + 2vmin);
+            --space-xl: calc(20px + 2.5vmin);
+            --space-xxl: calc(24px + 3vmin);
+            
+            /* Responsive Border-Radius */
+            --radius-sm: calc(6px + 0.5vmin);
+            --radius-md: calc(10px + 1vmin);
+            --radius-lg: calc(14px + 1.5vmin);
+            --radius-xl: calc(18px + 2vmin);
+            
+            /* Farben */
+            --primary-color: #007AFF;
+            --primary-dark: #0056CC;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --danger-color: #FF3B30;
+            --light-gray: #F2F2F7;
+            --medium-gray: #C7C7CC;
+            --dark-gray: #8E8E93;
+            --text-color: #1C1C1E;
+            --card-bg: #FFFFFF;
+            --background: #F2F2F7;
+            
+            /* Safe Areas für verschiedene Geräte */
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-left: env(safe-area-inset-left, 0px);
+            --safe-area-right: env(safe-area-inset-right, 0px);
+        }
+
+        /* Mobile-First Basis-Stile */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            font-size: var(--font-size-base);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--background);
+            color: var(--text-color);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Container - Flexibel für alle Formate */
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - var(--safe-area-top) - var(--safe-area-bottom));
+        }
+
+        /* Header - Prozentuale Höhe */
+        header {
+            background-color: var(--card-bg);
+            padding: var(--space-md) var(--space-lg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--light-gray);
+            min-height: calc(60px + 3vmin);
+        }
+
+        h1 {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--text-color);
+            flex: 1;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        /* Responsive Icon Buttons */
+        .icon-button {
+            background: none;
+            border: none;
+            font-size: var(--font-size-lg);
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: calc(44px + 2vmin);
+            min-height: calc(44px + 2vmin);
+        }
+
+        .icon-button:active {
+            background-color: rgba(0, 122, 255, 0.1);
+            transform: scale(0.95);
+        }
+
+        /* Einstellungen Panel */
+        .settings-panel {
+            background-color: var(--card-bg);
+            padding: var(--space-xl);
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .settings-panel.show {
+            display: block;
+        }
+
+        .settings-panel h2 {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--space-xl);
+            font-weight: 700;
+        }
+
+        /* Responsive Form Controls */
+        .setting-row {
+            margin-bottom: var(--space-lg);
+        }
+
+        .setting-row label {
+            display: block;
+            margin-bottom: var(--space-sm);
+            font-weight: 600;
+            font-size: var(--font-size-base);
+            color: var(--text-color);
+        }
+
+        input[type="number"], select, input[type="time"] {
+            width: 100%;
+            padding: var(--space-md);
+            border: 2px solid var(--medium-gray);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+            background-color: white;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* Große Touch-Checkbox (prozentual) */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            cursor: pointer;
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+            transition: background-color 0.2s;
+        }
+
+        input[type="checkbox"] {
+            width: calc(24px + 1vmin);
+            height: calc(24px + 1vmin);
+            accent-color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .checkbox-container label {
+            margin-bottom: 0;
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            flex: 1;
+        }
+
+        /* Haupt-Buttons - Prozentuale Größen */
+        .primary-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-lg);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--font-size-base);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            width: 100%;
+            margin: var(--space-md) 0;
+            min-height: calc(50px + 3vmin);
+            touch-action: manipulation;
+        }
+
+        .primary-button:active {
+            background-color: var(--primary-dark);
+            transform: scale(0.98);
+        }
+
+        /* Test-Buttons Styling */
+        .test-buttons-container {
+            background-color: var(--light-gray);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-top: var(--space-xl);
+            border: 1px solid var(--medium-gray);
+        }
+
+        .test-buttons-title {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            margin-bottom: var(--space-md);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .test-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(calc(140px + 2vw), 1fr));
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .test-button {
+            background-color: white;
+            color: var(--text-color);
+            border: 2px solid var(--medium-gray);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: calc(var(--space-xs) * 0.5);
+            min-height: calc(70px + 2vmin);
+            text-align: center;
+        }
+
+        .test-button i {
+            font-size: var(--font-size-lg);
+            margin-bottom: calc(var(--space-xs) * 0.5);
+        }
+
+        .test-button:hover {
+            border-color: var(--primary-color);
+        }
+
+        .test-button:active {
+            background-color: rgba(0, 122, 255, 0.1);
+            transform: scale(0.97);
+        }
+
+        .test-button.info {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .test-button.success {
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .test-button.warning {
+            border-color: var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        .test-button.danger {
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        /* Zeit-Eingabe Styling */
+        .time-input-row {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .time-input-label {
+            flex: 1;
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+            color: var(--text-color);
+        }
+
+        .time-input-value {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: var(--font-size-sm);
+            background: rgba(0, 122, 255, 0.1);
+            padding: calc(var(--space-xs) * 0.5) var(--space-sm);
+            border-radius: var(--radius-sm);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .time-input-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .time-input-button:active {
+            background-color: var(--primary-dark);
+            transform: scale(0.95);
+        }
+
+        /* Hauptinhalt Bereich - Flexibel */
+        .departure-list-container {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: var(--space-lg);
+            padding-bottom: calc(var(--space-xxl) + var(--safe-area-bottom));
+            position: relative;
+        }
+
+        /* Abfahrt-Liste - Responsive Grid */
+        .departure-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        /* Abfahrt-Karten - Prozentuale Größen mit Swipe-Unterstützung */
+        .departure-card-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+        }
+
+        .departure-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid var(--light-gray);
+            min-height: calc(100px + 5vmin);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            touch-action: pan-y;
+            user-select: none;
+            transform: translateX(0);
+        }
+
+        .departure-card.swiping {
+            transition: none;
+        }
+
+        .departure-card:active {
+            transform: scale(0.995);
+            background-color: rgba(0, 122, 255, 0.02);
+        }
+
+        .departure-card.pinned {
+            border-left: calc(5px + 0.3vmin) solid var(--primary-color);
+            background-color: rgba(0, 122, 255, 0.03);
+        }
+
+        /* Swipe-Aktionen */
+        .swipe-actions {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            padding-right: var(--space-md);
+            gap: var(--space-sm);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .swipe-action-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            white-space: nowrap;
+            min-height: calc(50px + 2vmin);
+            transition: all 0.2s ease;
+        }
+
+        .swipe-action-button:active {
+            transform: scale(0.95);
+        }
+
+        .swipe-action-button.pin {
+            background-color: var(--primary-color);
+        }
+
+        .swipe-action-button.notify {
+            background-color: var(--warning-color);
+        }
+
+        .swipe-action-button.delete {
+            background-color: var(--danger-color);
+        }
+
+        /* Swipe-Hinweis */
+        .swipe-hint {
+            text-align: center;
+            color: var(--dark-gray);
+            font-size: var(--font-size-sm);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Angepinnte Abfahrten Sektion */
+        .pinned-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+            padding: 0 var(--space-sm);
+        }
+
+        .section-title {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+        }
+
+        .clear-all-button {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            transition: background-color 0.2s;
+        }
+
+        .clear-all-button:active {
+            background-color: rgba(255, 59, 48, 0.1);
+        }
+
+        .departure-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-sm);
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+        }
+
+        .line-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .line-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: calc(var(--space-xs) * 0.8) var(--space-md);
+            border-radius: calc(100px + 5vmin);
+            font-weight: 700;
+            font-size: var(--font-size-base);
+            min-width: calc(50px + 3vmin);
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .direction {
+            font-weight: 600;
+            font-size: var(--font-size-base);
+            color: var(--text-color);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .departure-time {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--text-color);
+            flex-shrink: 0;
+        }
+
+        .departure-details {
+            margin-top: var(--space-xs);
+        }
+
+        .time-to-leave {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            margin-bottom: calc(var(--space-xs) * 0.5);
+            color: var(--warning-color);
+        }
+
+        .time-to-leave.urgent {
+            color: var(--danger-color);
+            font-weight: 700;
+        }
+
+        .expected-arrival {
+            font-size: var(--font-size-sm);
+            color: var(--dark-gray);
+        }
+
+        /* Pin Button - Responsive */
+        .pin-button {
+            position: absolute;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            background: none;
+            border: none;
+            color: var(--medium-gray);
+            cursor: pointer;
+            font-size: var(--font-size-base);
+            transition: all 0.2s;
+            width: calc(40px + 2vmin);
+            height: calc(40px + 2vmin);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            z-index: 2;
+        }
+
+        .pin-button.pinned {
+            color: var(--primary-color);
+        }
+
+        /* Erweiterte Details - Responsive */
+        .expanded-details {
+            margin-top: var(--space-lg);
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--light-gray);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            padding: calc(var(--space-xs) * 0.5) 0;
+        }
+
+        .timeline-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            margin-top: calc(var(--space-xs) * 0.5);
+        }
+
+        .timeline-dot {
+            width: calc(10px + 0.5vmin);
+            height: calc(10px + 0.5vmin);
+            background-color: var(--dark-gray);
+            border-radius: 50%;
+        }
+
+        .timeline-line {
+            width: calc(2px + 0.2vmin);
+            height: calc(30px + 2vmin);
+            background-color: var(--medium-gray);
+            margin-top: calc(var(--space-xs) * 0.5);
+        }
+
+        .timeline-content {
+            font-size: var(--font-size-sm);
+            color: var(--text-color);
+            line-height: 1.4;
+            flex: 1;
+            padding-top: calc(var(--space-xs) * 0.5);
+        }
+
+        /* Status-Indikatoren */
+        .realtime-indicator {
+            color: var(--success-color);
+            font-size: var(--font-size-xs);
+            display: flex;
+            align-items: center;
+            gap: calc(var(--space-xs) * 0.5);
+            font-weight: 500;
+        }
+
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            padding: calc(var(--space-xxl) * 2) var(--space-lg);
+            color: var(--dark-gray);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .loading i {
+            font-size: calc(40px + 3vmin);
+            margin-bottom: var(--space-lg);
+            color: var(--primary-color);
+        }
+
+        .loading p {
+            font-size: var(--font-size-base);
+            font-weight: 500;
+        }
+
+        /* Refresh Button - Prozentual */
+        .refresh-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-lg);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--font-size-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            width: 100%;
+            margin: var(--space-xl) 0;
+            min-height: calc(50px + 3vmin);
+            transition: all 0.2s ease;
+        }
+
+        .refresh-button:active {
+            background-color: var(--primary-dark);
+            transform: scale(0.98);
+        }
+
+        /* Last Updated - Responsive */
+        .last-updated {
+            text-align: center;
+            color: var(--dark-gray);
+            font-size: var(--font-size-sm);
+            padding: var(--space-md);
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        /* Notification Banner - Bottom Fixed */
+        .notification-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            padding: var(--space-lg);
+            padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: var(--space-md);
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        .notification-banner.show {
+            display: flex;
+        }
+
+        .notification-icon {
+            color: var(--primary-color);
+            font-size: var(--font-size-lg);
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-title {
+            font-weight: 700;
+            margin-bottom: calc(var(--space-xs) * 0.5);
+            font-size: var(--font-size-base);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .notification-body {
+            font-size: var(--font-size-sm);
+            color: var(--dark-gray);
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .close-notification {
+            background: none;
+            border: none;
+            color: var(--dark-gray);
+            cursor: pointer;
+            font-size: var(--font-size-base);
+            padding: var(--space-xs);
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+            min-width: calc(40px + 2vmin);
+            min-height: calc(40px + 2vmin);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sektion Titel */
+        .section-title.other-departures {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin: var(--space-lg) 0 var(--space-md) 0;
+            padding-left: var(--space-sm);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: calc(var(--space-xxl) * 2) var(--space-lg);
+            color: var(--dark-gray);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state i {
+            font-size: calc(50px + 4vmin);
+            margin-bottom: var(--space-lg);
+            color: var(--medium-gray);
+        }
+
+        .empty-state h3 {
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--space-sm);
+            color: var(--text-color);
+        }
+
+        .empty-state p {
+            font-size: var(--font-size-base);
+            line-height: 1.5;
+            max-width: 80%;
+        }
+
+        /* Animationen */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Anpassungen für verschiedene Geräte */
+        
+        /* Sehr kleine Handys (iPhone SE etc.) */
+        @media (max-width: 320px) {
+            :root {
+                --font-size-base: calc(14px + 0.8vw);
+                --space-lg: calc(12px + 1.5vmin);
+            }
+            
+            .departure-card {
+                padding: var(--space-md);
+            }
+            
+            .line-badge {
+                min-width: calc(45px + 2vmin);
+                padding: calc(var(--space-xs) * 0.6) var(--space-sm);
+            }
+            
+            .test-buttons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .time-input-row {
+                flex-wrap: wrap;
+            }
+            
+            .swipe-action-button {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: var(--font-size-xs);
+            }
+        }
+
+        /* Tablets und größere Handys */
+        @media (min-width: 768px) {
+            :root {
+                --font-size-base: calc(16px + 0.5vw);
+                --space-lg: calc(20px + 1vmin);
+            }
+            
+            .container {
+                max-width: 768px;
+                margin: 0 auto;
+            }
+            
+            .departure-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+            
+            .departure-card {
+                min-height: calc(120px + 3vmin);
+            }
+            
+            .swipe-hint {
+                display: none;
+            }
+        }
+
+        /* Desktop */
+        @media (min-width: 1024px) {
+            :root {
+                --font-size-base: 17px;
+                --space-lg: 24px;
+            }
+            
+            .container {
+                max-width: 900px;
+            }
+            
+            .departure-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+        }
+
+        /* Landscape Mode */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .departure-card {
+                min-height: calc(80px + 5vmin);
+                padding: var(--space-md);
+            }
+            
+            .departure-header {
+                margin-bottom: calc(var(--space-xs) * 0.5);
+            }
+            
+            .timeline-line {
+                height: calc(25px + 2vmin);
+            }
+            
+            .empty-state {
+                padding: var(--space-xxl) var(--space-lg);
+            }
+            
+            .swipe-hint {
+                display: none;
+            }
+        }
+
+        /* Sehr hohe Displays */
+        @media (min-height: 1000px) {
+            .departure-card {
+                min-height: calc(140px + 5vmin);
+            }
+            
+            .timeline-line {
+                height: calc(40px + 3vmin);
+            }
+        }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-color: #FFFFFF;
+                --card-bg: #1C1C1E;
+                --background: #000000;
+                --light-gray: #2C2C2E;
+                --medium-gray: #3A3A3C;
+                --dark-gray: #8E8E93;
+            }
+            
+            .departure-card {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            }
+            
+            input[type="number"], select, input[type="time"] {
+                background-color: #2C2C2E;
+                color: white;
+                border-color: #3A3A3C;
+            }
+            
+            .test-buttons-container {
+                background-color: #2C2C2E;
+                border-color: #3A3A3C;
+            }
+            
+            .test-button {
+                background-color: #1C1C1E;
+                border-color: #3A3A3C;
+                color: white;
+            }
+            
+            .time-input-value {
+                background: rgba(0, 122, 255, 0.2);
+            }
+            
+            .swipe-hint {
+                color: #8E8E93;
+            }
+        }
+
+        /* Accessibility - Größere Schrift bei Bedarf */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Dynamische Viewport-Höhe für Mobile */
+        @media (hover: none) and (pointer: coarse) {
+            :root {
+                --vh: 1vh;
+            }
+            
+            .container {
+                min-height: calc(var(--vh, 1vh) * 100 - var(--safe-area-top) - var(--safe-area-bottom));
+            }
+        }
+
+        /* High DPI Displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .departure-card {
+                border-width: 0.5px;
+            }
+            
+            .timeline-line {
+                width: 1px;
+            }
+        }
+    </style>
+    <script>
+        // Dynamische Viewport-Höhe für Mobile Browser
+        function updateViewportHeight() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        // Initial und bei Größenänderung
+        updateViewportHeight();
+        window.addEventListener('resize', updateViewportHeight);
+        window.addEventListener('orientationchange', updateViewportHeight);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>U2 ab Bülowstr.</h1>
+            <div class="header-controls">
+                <button class="icon-button" id="settingsButton" title="Einstellungen">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Einstellungen -->
+        <div class="settings-panel" id="settingsPanel">
+            <h2>Einstellungen</h2>
+            
+            <div class="setting-row">
+                <label for="leadTime">Minuten vor Abfahrt losgehen:</label>
+                <input type="number" id="leadTime" min="1" max="30" value="5">
+            </div>
+            
+            <div class="setting-row">
+                <label for="travelDuration">Gesamtreisezeit (Minuten):</label>
+                <input type="number" id="travelDuration" min="1" max="120" value="22">
+            </div>
+            
+            <div class="setting-row">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="onlyPlatform2" checked>
+                    <label for="onlyPlatform2">Nur Gleis 2 anzeigen</label>
+                </div>
+            </div>
+            
+            <button class="primary-button" id="enableNotifications">
+                <i class="fas fa-bell"></i> Benachrichtigungen aktivieren
+            </button>
+            
+            <div style="text-align: center; margin-top: var(--space-md); font-size: var(--font-size-sm); color: var(--dark-gray);">
+                <span id="notificationStatus"></span>
+            </div>
+            
+            <!-- NEU: Test-Bereich für Benachrichtigungen -->
+            <div class="test-buttons-container">
+                <div class="test-buttons-title">
+                    <i class="fas fa-vial"></i>
+                    Benachrichtigungen testen
+                </div>
+                
+                <div class="test-buttons-grid">
+                    <button class="test-button info" id="testInfo">
+                        <i class="fas fa-info-circle"></i>
+                        Info
+                    </button>
+                    <button class="test-button success" id="testSuccess">
+                        <i class="fas fa-check-circle"></i>
+                        Erfolg
+                    </button>
+                    <button class="test-button warning" id="testWarning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Warnung
+                    </button>
+                    <button class="test-button danger" id="testDanger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Dringend
+                    </button>
+                </div>
+                <div class="test-buttons-grid">
+                    <button class="test-button" id="testIn5Sec">
+                        <i class="fas fa-bolt"></i>
+                        In 5 Sek
+                    </button>
+                    <button class="test-button" id="testIn1Min">
+                        <i class="fas fa-clock"></i>
+                        In 1 Min
+                    </button>
+                    <button class="test-button" id="testIn5Min">
+                        <i class="fas fa-history"></i>
+                        In 5 Min
+                    </button>
+                </div>
+                <div style="text-align: center; margin-top: var(--space-md); font-size: var(--font-size-sm); color: var(--dark-gray);">
+                    <p><i class="fas fa-info-circle"></i> Zum Testen Zeit wählen und Button klicken</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hauptinhalt -->
+        <div class="departure-list-container">
+            <!-- Loading Indicator -->
+            <div class="loading" id="loadingIndicator">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Lade Abfahrten...</p>
+            </div>
+
+            <!-- Abfahrt-Liste -->
+            <div id="departureList" style="display: none;">
+                <!-- Swipe-Hinweis -->
+                <div class="swipe-hint" id="swipeHint">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Zum Anpinnen oder für Benachrichtigungen nach links wischen</span>
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                
+                <!-- Angepinnte Abfahrten -->
+                <div id="pinnedSection" class="pinned-section" style="display: none;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-thumbtack"></i>
+                            Meine Abfahrten
+                        </div>
+                        <button class="clear-all-button" id="clearAllPinned">
+                            Alle löschen
+                        </button>
+                    </div>
+                    <div id="pinnedDeparturesList" class="departure-list">
+                        <!-- Angepinnte Abfahrten werden hier eingefügt -->
+                    </div>
+                </div>
+
+                <!-- Weitere Abfahrten -->
+                <div id="otherDeparturesSection" style="display: none;">
+                    <div class="section-header">
+                        <div class="section-title other-departures">
+                            <i class="fas fa-subway"></i>
+                            Weitere Abfahrten
+                        </div>
+                    </div>
+                    <div id="otherDeparturesList" class="departure-list">
+                        <!-- Weitere Abfahrten werden hier eingefügt -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Refresh Button -->
+            <button class="refresh-button" id="refreshButton">
+                <i class="fas fa-sync-alt"></i> Aktualisieren
+            </button>
+
+            <!-- Letzte Aktualisierung -->
+            <div class="last-updated" id="lastUpdated"></div>
+        </div>
+
+        <!-- Benachrichtigungs-Banner -->
+        <div class="notification-banner" id="notificationBanner">
+            <i class="fas fa-bell notification-icon"></i>
+            <div class="notification-content">
+                <div class="notification-title" id="bannerTitle"></div>
+                <div class="notification-body" id="bannerBody"></div>
+            </div>
+            <button class="close-notification" id="closeBanner">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Zustandsvariablen
+        let departures = [];
+        let pinnedDepartures = [];
+        let expandedDepartureId = null;
+        let settings = {
+            leadTime: 5,
+            travelDuration: 22,
+            onlyPlatform2: true
+        };
+        let scheduledNotifications = new Map();
+        let scheduledTestNotifications = new Map();
+        let isSwiping = false;
+        let swipeStartX = 0;
+        let currentSwipeCard = null;
+
+        // DOM Elemente
+        const settingsPanel = document.getElementById('settingsPanel');
+        const settingsButton = document.getElementById('settingsButton');
+        const departureList = document.getElementById('departureList');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const refreshButton = document.getElementById('refreshButton');
+        const lastUpdated = document.getElementById('lastUpdated');
+        const notificationBanner = document.getElementById('notificationBanner');
+        const bannerTitle = document.getElementById('bannerTitle');
+        const bannerBody = document.getElementById('bannerBody');
+        const closeBanner = document.getElementById('closeBanner');
+        const enableNotificationsBtn = document.getElementById('enableNotifications');
+        const notificationStatus = document.getElementById('notificationStatus');
+        const pinnedSection = document.getElementById('pinnedSection');
+        const pinnedDeparturesList = document.getElementById('pinnedDeparturesList');
+        const otherDeparturesSection = document.getElementById('otherDeparturesSection');
+        const otherDeparturesList = document.getElementById('otherDeparturesList');
+        const swipeHint = document.getElementById('swipeHint');
+        const clearAllPinnedBtn = document.getElementById('clearAllPinned');
+
+        // Test-Buttons
+        const testInfoBtn = document.getElementById('testInfo');
+        const testSuccessBtn = document.getElementById('testSuccess');
+        const testWarningBtn = document.getElementById('testWarning');
+        const testDangerBtn = document.getElementById('testDanger');
+        const testIn5SecBtn = document.getElementById('testIn5Sec');
+        const testIn1MinBtn = document.getElementById('testIn1Min');
+        const testIn5MinBtn = document.getElementById('testIn5Min');
+
+        // Einstellungen laden
+        function loadSettings() {
+            const savedLeadTime = localStorage.getItem('leadTime');
+            const savedTravelDuration = localStorage.getItem('travelDuration');
+            const savedOnlyPlatform2 = localStorage.getItem('onlyPlatform2');
+            
+            if (savedLeadTime) {
+                settings.leadTime = parseInt(savedLeadTime);
+                document.getElementById('leadTime').value = settings.leadTime;
+            }
+            if (savedTravelDuration) {
+                settings.travelDuration = parseInt(savedTravelDuration);
+                document.getElementById('travelDuration').value = settings.travelDuration;
+            }
+            if (savedOnlyPlatform2) {
+                settings.onlyPlatform2 = savedOnlyPlatform2 === 'true';
+                document.getElementById('onlyPlatform2').checked = settings.onlyPlatform2;
+            }
+            
+            // Geladene angepinnte Abfahrten
+            const savedPinned = localStorage.getItem('pinnedDepartures');
+            if (savedPinned) {
+                try {
+                    const parsed = JSON.parse(savedPinned);
+                    pinnedDepartures = parsed.map(dep => ({
+                        ...dep,
+                        departureTime: new Date(dep.departureTime),
+                        minutesUntil: getMinutesUntil(new Date(dep.departureTime))
+                    }));
+                } catch (e) {
+                    console.error('Fehler beim Laden:', e);
+                    pinnedDepartures = [];
+                }
+            }
+        }
+
+        // Einstellungen speichern
+        function saveSettings() {
+            localStorage.setItem('leadTime', settings.leadTime);
+            localStorage.setItem('travelDuration', settings.travelDuration);
+            localStorage.setItem('onlyPlatform2', settings.onlyPlatform2);
+        }
+
+        // Angepinnte Abfahrten speichern
+        function savePinnedDepartures() {
+            const serialized = pinnedDepartures.map(dep => ({
+                ...dep,
+                departureTime: dep.departureTime.toISOString()
+            }));
+            localStorage.setItem('pinnedDepartures', JSON.stringify(serialized));
+        }
+
+        // Benachrichtigungsstatus
+        function updateNotificationStatus() {
+            if ('Notification' in window && 'serviceWorker' in navigator) {
+                if (Notification.permission === 'granted') {
+                    notificationStatus.textContent = '✓ Benachrichtigungen aktiviert';
+                    enableNotificationsBtn.innerHTML = '<i class="fas fa-bell-slash"></i> Benachrichtigungen deaktivieren';
+                    enableNotificationsBtn.onclick = () => {
+                        showNotification('Info', 'Berechtigungen können in den Browsereinstellungen verwaltet werden');
+                    };
+                } else if (Notification.permission === 'denied') {
+                    notificationStatus.textContent = '✗ Benachrichtigungen blockiert';
+                    enableNotificationsBtn.style.display = 'none';
+                } else {
+                    notificationStatus.textContent = '';
+                    enableNotificationsBtn.innerHTML = '<i class="fas fa-bell"></i> Benachrichtigungen aktivieren';
+                    enableNotificationsBtn.onclick = requestNotificationPermission;
+                }
+            } else {
+                notificationStatus.textContent = 'Browser unterstützt keine Benachrichtigungen';
+                enableNotificationsBtn.style.display = 'none';
+            }
+        }
+
+        // Benachrichtigungsberechtigung anfordern
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showNotification('Info', 'Ihr Browser unterstützt keine Benachrichtigungen');
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    showNotification('Erfolg', 'Benachrichtigungen aktiviert! 🎉');
+                    updateNotificationStatus();
+                    
+                    // Service Worker für Hintergrundbenachrichtigungen registrieren
+                    if ('serviceWorker' in navigator) {
+                        try {
+                            const registration = await navigator.serviceWorker.register('/sw.js');
+                            console.log('Service Worker registriert:', registration);
+                        } catch (error) {
+                            console.log('Service Worker Registrierung fehlgeschlagen:', error);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Fehler:', error);
+            }
+        }
+
+        // Banner-Benachrichtigung anzeigen
+        function showNotification(title, body, options = {}) {
+            // Banner aktualisieren
+            bannerTitle.textContent = title;
+            bannerBody.textContent = body;
+            
+            // Banner-Stil basierend auf Optionen
+            if (options.type === 'danger') {
+                notificationBanner.style.borderTopColor = 'var(--danger-color)';
+                notificationBanner.style.backgroundColor = 'rgba(255, 59, 48, 0.05)';
+            } else if (options.type === 'warning') {
+                notificationBanner.style.borderTopColor = 'var(--warning-color)';
+                notificationBanner.style.backgroundColor = 'rgba(255, 149, 0, 0.05)';
+            } else if (options.type === 'success') {
+                notificationBanner.style.borderTopColor = 'var(--success-color)';
+                notificationBanner.style.backgroundColor = 'rgba(52, 199, 89, 0.05)';
+            } else if (options.type === 'info') {
+                notificationBanner.style.borderTopColor = 'var(--primary-color)';
+                notificationBanner.style.backgroundColor = 'var(--card-bg)';
+            } else {
+                // Reset auf Standard
+                notificationBanner.style.borderTopColor = '';
+                notificationBanner.style.backgroundColor = '';
+            }
+            
+            // Banner anzeigen
+            notificationBanner.classList.add('show');
+            
+            // WENN PERSISTENT: NICHT AUTOMATISCH AUSBLENDEN
+            // NUR wenn nicht persistent, dann nach Zeit ausblenden
+            if (!options.persistent) {
+                setTimeout(() => {
+                    notificationBanner.classList.remove('show');
+                }, options.duration || 5000);
+            }
+            // Wenn persistent=true, bleibt die Benachrichtigung offen bis der Nutzer sie schließt
+            
+            // Sound abspielen (wenn aktiviert)
+            if (options.sound) {
+                playNotificationSound();
+            }
+            
+            // In Konsole loggen
+            console.log(`[${new Date().toLocaleTimeString()}] Benachrichtigung: ${title} - ${body}`);
+            
+            // Browser-Benachrichtigung senden (wenn erlaubt)
+            sendBrowserNotification(title, body, options);
+        }
+
+        // Browser-Benachrichtigung senden
+        function sendBrowserNotification(title, body, options = {}) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                return;
+            }
+
+            try {
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico',
+                    tag: options.tag || 'u2-departure',
+                    requireInteraction: options.persistent || false, // Hier: requireInteraction setzen
+                    silent: options.silent || false,
+                    data: options.data || {}
+                });
+
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+
+                // NUR wenn nicht persistent, dann automatisch schließen
+                if (!options.persistent) {
+                    setTimeout(() => {
+                        notification.close();
+                    }, 10000);
+                }
+                // Wenn persistent=true, bleibt die Browser-Benachrichtigung offen bis der Nutzer sie schließt
+
+            } catch (error) {
+                console.error('Fehler bei Browser-Benachrichtigung:', error);
+            }
+        }
+
+        // Benachrichtigungssound
+        function playNotificationSound() {
+            try {
+                // Erstelle einen einfachen Web Audio Sound
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                
+            } catch (error) {
+                console.log('Audio nicht verfügbar:', error);
+            }
+        }
+
+        // Benachrichtigung zu einer bestimmten Zeit planen
+        function scheduleNotificationAtTime(notificationTime, title, body, options = {}) {
+            const now = new Date();
+            const targetTime = new Date(notificationTime);
+            
+            // Falls die Zeit bereits vergangen ist, füge einen Tag hinzu
+            if (targetTime <= now) {
+                targetTime.setDate(targetTime.getDate() + 1);
+            }
+            
+            const timeDiff = targetTime - now;
+            const minutesUntil = Math.floor(timeDiff / (1000 * 60));
+            
+            if (timeDiff <= 0) return null;
+            
+            // Bereits geplante Benachrichtigungen für diesen Zeitpunkt löschen
+            const notificationId = `test-${targetTime.getTime()}`;
+            if (scheduledTestNotifications.has(notificationId)) {
+                clearTimeout(scheduledTestNotifications.get(notificationId));
+                scheduledTestNotifications.delete(notificationId);
+            }
+            
+            // Neue Benachrichtigung planen
+            const timeoutId = setTimeout(() => {
+                showNotification(title, body, options);
+                scheduledTestNotifications.delete(notificationId);
+            }, timeDiff);
+            
+            scheduledTestNotifications.set(notificationId, timeoutId);
+            
+            return {
+                id: notificationId,
+                time: targetTime,
+                minutesUntil: minutesUntil,
+                title: title,
+                body: body
+            };
+        }
+
+        // Zeit berechnen
+        function getMinutesUntil(date) {
+            const now = new Date();
+            const diffMs = date - now;
+            return Math.floor(diffMs / (1000 * 60));
+        }
+
+        // Uhrzeit formatieren
+        function formatTime(date) {
+            return date.toLocaleTimeString('de-DE', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+
+        // Abfahrten laden
+        async function fetchDepartures() {
+            try {
+                loadingIndicator.style.display = 'flex';
+                departureList.style.display = 'none';
+                pinnedSection.style.display = 'none';
+                otherDeparturesSection.style.display = 'none';
+                
+                const response = await fetch(
+                    'https://v6.vbb.transport.rest/stops/900056104/departures?duration=50&linesOfStops=false&remarks=false&language=en'
+                );
+                
+                if (!response.ok) throw new Error('Fehler beim Laden');
+                
+                const data = await response.json();
+                
+                departures = data.departures
+                    .filter(dep => dep.line.name === "U2" && (!dep.cancelled || dep.cancelled === false))
+                    .filter(dep => settings.onlyPlatform2 ? dep.plannedPlatform === "2" : true)
+                    .map(dep => {
+                        const departureTime = new Date(dep.when || dep.plannedWhen);
+                        return {
+                            id: dep.tripId,
+                            lineName: dep.line.name,
+                            direction: dep.direction,
+                            departureTime: departureTime,
+                            platform: dep.plannedPlatform,
+                            currentTripPosition: dep.currentTripPosition,
+                            minutesUntil: getMinutesUntil(departureTime)
+                        };
+                    })
+                    .filter(dep => dep.minutesUntil >= -5)
+                    .slice(0, 10);
+                
+                renderDepartures();
+                checkNotifications();
+                
+            } catch (error) {
+                console.error('Fehler:', error);
+                showNotification('Fehler', 'Keine Verbindung', { type: 'danger', persistent: true });
+                renderErrorState();
+            } finally {
+                loadingIndicator.style.display = 'none';
+                departureList.style.display = 'block';
+                lastUpdated.textContent = `Aktualisiert: ${formatTime(new Date())}`;
+            }
+        }
+
+        // Fehlerzustand
+        function renderErrorState() {
+            departureList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-wifi-slash"></i>
+                    <h3>Keine Verbindung</h3>
+                    <p>Bitte prüfen Sie Ihre Internetverbindung</p>
+                </div>
+            `;
+        }
+
+        // Benachrichtigungen für angepinnte Abfahrt planen
+        function scheduleNotificationsForDeparture(departure) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+            const departureTime = new Date(departure.departureTime);
+            const leaveTime = new Date(departureTime.getTime() - (settings.leadTime * 60000));
+            const now = new Date();
+
+            if (leaveTime <= now) return;
+
+            // Alle bestehenden Benachrichtigungen für diese Abfahrt löschen
+            clearDepartureNotifications(departure.id);
+
+            // 5 Minuten vorher
+            const fiveMinBefore = new Date(leaveTime.getTime() - (5 * 60000));
+            if (fiveMinBefore > now) {
+                const timeout5min = setTimeout(() => {
+                    showNotification('Bald losgehen ⏰', 
+                        `Noch 5 Minuten bis zur U2 nach ${departure.direction}`,
+                        { type: 'info', sound: true, persistent: true }
+                    );
+                }, fiveMinBefore - now);
+                scheduledNotifications.set(`${departure.id}-5min`, timeout5min);
+            }
+
+            // 1 Minute vorher
+            const oneMinBefore = new Date(leaveTime.getTime() - 60000);
+            if (oneMinBefore > now) {
+                const timeout1min = setTimeout(() => {
+                    showNotification('Jetzt losgehen! 🚶‍♂️', 
+                        `U2 nach ${departure.direction} fährt gleich ab`,
+                        { type: 'warning', sound: true, persistent: true }
+                    );
+                }, oneMinBefore - now);
+                scheduledNotifications.set(`${departure.id}-1min`, timeout1min);
+            }
+
+            // Zur Losgehzeit
+            const timeoutLeave = setTimeout(() => {
+                showNotification('Losgehen! 🏃‍♂️', 
+                    `U2 nach ${departure.direction} fährt jetzt ab`,
+                    { type: 'danger', sound: true, persistent: true }
+                );
+            }, leaveTime - now);
+            scheduledNotifications.set(departure.id, timeoutLeave);
+        }
+
+        // Benachrichtigungen für Abfahrt löschen
+        function clearDepartureNotifications(departureId) {
+            // 5-Minuten-Benachrichtigung löschen
+            if (scheduledNotifications.has(`${departureId}-5min`)) {
+                clearTimeout(scheduledNotifications.get(`${departureId}-5min`));
+                scheduledNotifications.delete(`${departureId}-5min`);
+            }
+            
+            // 1-Minuten-Benachrichtigung löschen
+            if (scheduledNotifications.has(`${departureId}-1min`)) {
+                clearTimeout(scheduledNotifications.get(`${departureId}-1min`));
+                scheduledNotifications.delete(`${departureId}-1min`);
+            }
+            
+            // Losgeh-Benachrichtigung löschen
+            if (scheduledNotifications.has(departureId)) {
+                clearTimeout(scheduledNotifications.get(departureId));
+                scheduledNotifications.delete(departureId);
+            }
+        }
+
+        // Benachrichtigungen prüfen und neu planen
+        function checkNotifications() {
+            // Alle bestehenden Benachrichtigungen löschen
+            scheduledNotifications.forEach(timeout => clearTimeout(timeout));
+            scheduledNotifications.clear();
+
+            // Für jede angepinnte Abfahrt Benachrichtigungen planen
+            pinnedDepartures.forEach(departure => {
+                scheduleNotificationsForDeparture(departure);
+            });
+        }
+
+        // Abfahrt anpinnen
+        function pinDeparture(departure) {
+            // Prüfen, ob bereits angepinnt
+            const alreadyPinned = pinnedDepartures.some(dep => dep.id === departure.id);
+            
+            if (!alreadyPinned) {
+                pinnedDepartures.push(departure);
+                savePinnedDepartures();
+                scheduleNotificationsForDeparture(departure);
+                
+                // Berechnungen für die Benachrichtigung
+                const timeToLeave = departure.minutesUntil - settings.leadTime;
+                const leaveTime = new Date(departure.departureTime.getTime() - (settings.leadTime * 60000));
+                const expectedArrival = new Date(departure.departureTime.getTime() + (settings.travelDuration * 60000));
+                
+                const leaveTimeStr = formatTime(leaveTime);
+                const arrivalTimeStr = formatTime(expectedArrival);
+                
+                // Verbesserte Benachrichtigung
+                showNotification('U2 Abfahrt angepinnt 🚇', 
+                    `Fahrt nach ${departure.direction}
+Losgehen: ${leaveTimeStr} (in ${timeToLeave} Min)
+Ankunft: ${arrivalTimeStr}`, 
+                    { 
+                        type: 'success', 
+                        sound: true, 
+                        persistent: true
+                    }
+                );
+                
+                renderDepartures();
+            }
+        }
+
+        // Abfahrt abpinnen
+        function unpinDeparture(departureId) {
+            const index = pinnedDepartures.findIndex(dep => dep.id === departureId);
+            if (index !== -1) {
+                const departure = pinnedDepartures[index];
+                pinnedDepartures.splice(index, 1);
+                savePinnedDepartures();
+                clearDepartureNotifications(departureId);
+                
+                showNotification('Abfahrt abgepinnt', 
+                    `U2 nach ${departure.direction} entfernt`, 
+                    { type: 'info', persistent: true }
+                );
+                
+                renderDepartures();
+            }
+        }
+
+        // Alle angepinnten Abfahrten löschen
+        function clearAllPinned() {
+            if (pinnedDepartures.length === 0) return;
+            
+            // Alle Benachrichtigungen löschen
+            pinnedDepartures.forEach(dep => {
+                clearDepartureNotifications(dep.id);
+            });
+            
+            pinnedDepartures = [];
+            savePinnedDepartures();
+            
+            showNotification('Alle gelöscht', 
+                'Alle angepinnten Abfahrten entfernt', 
+                { type: 'info', persistent: true }
+            );
+            
+            renderDepartures();
+        }
+
+        // Abfahrt erweitern/reduzieren
+        function toggleExpandDeparture(departureId) {
+            expandedDepartureId = expandedDepartureId === departureId ? null : departureId;
+            renderDepartures();
+        }
+
+        // Abfahrten rendern
+        function renderDepartures() {
+            // Angepinnte Abfahrten
+            if (pinnedDepartures.length > 0) {
+                pinnedSection.style.display = 'block';
+                pinnedDeparturesList.innerHTML = '';
+                
+                pinnedDepartures.forEach(departure => {
+                    const card = createDepartureCard(departure, true);
+                    pinnedDeparturesList.appendChild(card);
+                });
+            } else {
+                pinnedSection.style.display = 'none';
+            }
+            
+            // Weitere Abfahrten (nicht angepinnt)
+            const otherDepartures = departures.filter(dep => 
+                !pinnedDepartures.some(pinned => pinned.id === dep.id)
+            );
+            
+            if (otherDepartures.length > 0) {
+                otherDeparturesSection.style.display = 'block';
+                otherDeparturesList.innerHTML = '';
+                
+                otherDepartures.forEach(departure => {
+                    const card = createDepartureCard(departure, false);
+                    otherDeparturesList.appendChild(card);
+                });
+                
+                // Swipe-Hinweis nur anzeigen, wenn es Abfahrten gibt
+                swipeHint.style.display = 'flex';
+            } else {
+                otherDeparturesSection.style.display = 'none';
+                swipeHint.style.display = 'none';
+            }
+            
+            // Swipe-Hinweis ausblenden, wenn bereits Abfahrten angepinnt sind
+            if (pinnedDepartures.length > 0) {
+                swipeHint.style.display = 'none';
+            }
+        }
+
+        // Swipe-Gesten Handhabung
+        function setupSwipeGestures(cardElement, departure, isPinned) {
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+            const card = cardElement.querySelector('.departure-card');
+            const swipeActions = cardElement.querySelector('.swipe-actions');
+            
+            card.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isDragging = true;
+                card.classList.add('swiping');
+            }, { passive: true });
+            
+            card.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                
+                currentX = e.touches[0].clientX;
+                const diff = currentX - startX;
+                
+                // Nur nach links wischen erlauben
+                if (diff < 0) {
+                    const translateX = Math.max(diff, -200);
+                    card.style.transform = `translateX(${translateX}px)`;
+                    
+                    // Swipe-Aktionen anzeigen basierend auf Wisch-Distanz
+                    const opacity = Math.min(Math.abs(diff) / 200, 1);
+                    swipeActions.style.opacity = opacity;
+                    swipeActions.style.transform = `translateX(${translateX}px)`;
+                }
+            }, { passive: true });
+            
+            card.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                const diff = currentX - startX;
+                
+                // Wenn weit genug nach links gewischt wurde
+                if (diff < -100) {
+                    // Aktion ausführen
+                    card.style.transform = 'translateX(-150px)';
+                    swipeActions.style.opacity = '1';
+                    swipeActions.style.transform = 'translateX(-150px)';
+                    
+                    // Nach 3 Sekunden zurücksetzen
+                    setTimeout(() => {
+                        card.style.transform = 'translateX(0)';
+                        swipeActions.style.opacity = '0';
+                        swipeActions.style.transform = 'translateX(100%)';
+                    }, 3000);
+                } else {
+                    // Zurücksetzen
+                    card.style.transform = 'translateX(0)';
+                    swipeActions.style.opacity = '0';
+                    swipeActions.style.transform = 'translateX(100%)';
+                }
+                
+                card.classList.remove('swiping');
+            }, { passive: true });
+            
+            // Klick auf Swipe-Aktionen
+            const pinAction = swipeActions.querySelector('.swipe-action-button.pin');
+            const notifyAction = swipeActions.querySelector('.swipe-action-button.notify');
+            
+            if (pinAction) {
+                pinAction.addEventListener('click', () => {
+                    if (isPinned) {
+                        unpinDeparture(departure.id);
+                    } else {
+                        pinDeparture(departure);
+                    }
+                    // Zurücksetzen
+                    card.style.transform = 'translateX(0)';
+                    swipeActions.style.opacity = '0';
+                    swipeActions.style.transform = 'translateX(100%)';
+                });
+            }
+            
+            if (notifyAction) {
+                notifyAction.addEventListener('click', () => {
+                    if (!isPinned) {
+                        pinDeparture(departure);
+                    }
+                    // Zurücksetzen
+                    card.style.transform = 'translateX(0)';
+                    swipeActions.style.opacity = '0';
+                    swipeActions.style.transform = 'translateX(100%)';
+                });
+            }
+        }
+
+        // Abfahrtskarte erstellen
+        function createDepartureCard(departure, isPinned) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'departure-card-wrapper';
+            
+            const timeToLeave = departure.minutesUntil - settings.leadTime;
+            const expectedArrival = new Date(departure.departureTime.getTime() + (settings.travelDuration * 60000));
+            const isExpanded = expandedDepartureId === departure.id;
+            
+            let timelineHTML = '';
+            if (isExpanded) {
+                timelineHTML = createTimelineHTML(departure);
+            }
+            
+            wrapper.innerHTML = `
+                <div class="departure-card ${isPinned ? 'pinned' : ''} ${departure.minutesUntil < 0 ? 'passed' : ''}">
+                    ${isPinned ? `
+                        <button class="pin-button pinned" data-departure-id="${departure.id}">
+                            <i class="fas fa-thumbtack"></i>
+                        </button>
+                    ` : ''}
+                    
+                    <div class="departure-header">
+                        <div class="line-info">
+                            <span class="line-badge">${departure.lineName}</span>
+                            <span class="direction">→ ${departure.direction}</span>
+                            ${departure.currentTripPosition ? '<span class="realtime-indicator"><i class="fas fa-wave-square"></i> Live</span>' : ''}
+                        </div>
+                        <div class="departure-time">${formatTime(departure.departureTime)}</div>
+                    </div>
+                    
+                    <div class="departure-details">
+                        <div class="time-to-leave ${timeToLeave < 0 ? 'urgent' : ''}">
+                            Losgehen in ${timeToLeave} min
+                        </div>
+                        <div class="expected-arrival">
+                            Ankunft: ${formatTime(expectedArrival)}
+                        </div>
+                    </div>
+                    
+                    ${timelineHTML}
+                </div>
+                
+                <div class="swipe-actions">
+                    ${isPinned ? `
+                        <button class="swipe-action-button delete" title="Abpinnen">
+                            <i class="fas fa-times"></i>
+                            Abpinnen
+                        </button>
+                    ` : `
+                        <button class="swipe-action-button pin" title="Anpinnen">
+                            <i class="fas fa-thumbtack"></i>
+                            Anpinnen
+                        </button>
+                        <button class="swipe-action-button notify" title="Benachrichtigen">
+                            <i class="fas fa-bell"></i>
+                            Benachrichtigen
+                        </button>
+                    `}
+                </div>
+            `;
+            
+            // Event Listeners
+            const card = wrapper.querySelector('.departure-card');
+            const pinBtn = wrapper.querySelector('.pin-button');
+            
+            if (pinBtn) {
+                pinBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    unpinDeparture(departure.id);
+                });
+            }
+            
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.pin-button')) {
+                    toggleExpandDeparture(departure.id);
+                }
+            });
+            
+            // Swipe-Gesten einrichten
+            setupSwipeGestures(wrapper, departure, isPinned);
+            
+            return wrapper;
+        }
+
+        // Timeline erstellen
+        function createTimelineHTML(departure) {
+            const now = new Date();
+            const leaveTime = new Date(departure.departureTime.getTime() - (settings.leadTime * 60000));
+            const uBahnArrival = new Date(departure.departureTime.getTime() + (10 * 60000));
+            const remainingUBahn = Math.floor((uBahnArrival - now) / 60000);
+            const finalArrival = new Date(departure.departureTime.getTime() + (settings.travelDuration * 60000));
+            
+            return `
+                <div class="expanded-details">
+                    <div class="timeline">
+                        <div class="timeline-step">
+                            <div class="timeline-marker">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-line"></div>
+                            </div>
+                            <div class="timeline-content">Losgehen um ${formatTime(leaveTime)}</div>
+                        </div>
+                        
+                        <div class="timeline-step">
+                            <div class="timeline-marker">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-line"></div>
+                            </div>
+                            <div class="timeline-content">${settings.leadTime} min zu Fuß bis Bülowstr</div>
+                        </div>
+                        
+                        <div class="timeline-step">
+                            <div class="timeline-marker">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-line"></div>
+                            </div>
+                            <div class="timeline-content">Abfahrt um ${formatTime(departure.departureTime)}</div>
+                        </div>
+                        
+                        <div class="timeline-step">
+                            <div class="timeline-marker">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-line"></div>
+                            </div>
+                            <div class="timeline-content">Ankunft Prinzenstraße um ${formatTime(uBahnArrival)} (noch ${remainingUBahn} min)</div>
+                        </div>
+                        
+                        <div class="timeline-step">
+                            <div class="timeline-marker">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-line"></div>
+                            </div>
+                            <div class="timeline-content">${Math.max(settings.travelDuration - 10, 0)} min laufen zur Schule</div>
+                        </div>
+                        
+                        <div class="timeline-step">
+                            <div class="timeline-marker">
+                                <div class="timeline-dot"></div>
+                            </div>
+                            <div class="timeline-content">Ankunft um ${formatTime(finalArrival)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Test-Buttons einrichten
+        function setupTestButtons() {
+            // Sofortige Test-Benachrichtigungen
+            testInfoBtn.addEventListener('click', () => {
+                showNotification('Test: Info-Benachrichtung ℹ️', 
+                    'Dies ist eine Test-Info-Benachrichtigung',
+                    { type: 'info', sound: true, persistent: true }
+                );
+            });
+
+            testSuccessBtn.addEventListener('click', () => {
+                showNotification('Test: Erfolg ✅', 
+                    'Testbenachrichtigung erfolgreich!',
+                    { type: 'success', sound: true, persistent: true }
+                );
+            });
+
+            testWarningBtn.addEventListener('click', () => {
+                showNotification('Test: Warnung ⚠️', 
+                    'Test-Warnung: Bald losgehen!',
+                    { type: 'warning', sound: true, persistent: true }
+                );
+            });
+
+            testDangerBtn.addEventListener('click', () => {
+                showNotification('Test: Dringend! 🔴', 
+                    'Test-Alarm: JETZT losgehen!',
+                    { type: 'danger', sound: true, persistent: true }
+                );
+            });
+
+            // Zeitgesteuerte Test-Benachrichtigungen
+            testIn5SecBtn.addEventListener('click', () => {
+                const in5Sec = new Date(Date.now() + 5000);
+                scheduleNotificationAtTime(
+                    in5Sec,
+                    'Test in 5 Sekunden ⏰',
+                    'Diese Testbenachrichtigung wurde vor 5 Sekunden geplant',
+                    { type: 'info', sound: true, persistent: true }
+                );
+                showNotification('Test geplant', 
+                    `Testbenachrichtigung in 5 Sekunden`, 
+                    { type: 'success', persistent: true }
+                );
+            });
+
+            testIn1MinBtn.addEventListener('click', () => {
+                const in1Min = new Date(Date.now() + 60000);
+                scheduleNotificationAtTime(
+                    in1Min,
+                    'Test in 1 Minute ⏰',
+                    'Diese Testbenachrichtigung wurde vor 1 Minute geplant',
+                    { type: 'warning', sound: true, persistent: true }
+                );
+                showNotification('Test geplant', 
+                    `Testbenachrichtigung in 1 Minute`, 
+                    { type: 'success', persistent: true }
+                );
+            });
+
+            testIn5MinBtn.addEventListener('click', () => {
+                const in5Min = new Date(Date.now() + 5 * 60000);
+                scheduleNotificationAtTime(
+                    in5Min,
+                    'Test in 5 Minuten ⏰',
+                    'Diese Testbenachrichtigung wurde vor 5 Minuten geplant',
+                    { type: 'danger', sound: true, persistent: true }
+                );
+                showNotification('Test geplant', 
+                    `Testbenachrichtigung in 5 Minuten`, 
+                    { type: 'success', persistent: true }
+                );
+            });
+        }
+
+        // Event Listeners
+        settingsButton.addEventListener('click', () => {
+            settingsPanel.classList.toggle('show');
+        });
+
+        closeBanner.addEventListener('click', () => {
+            notificationBanner.classList.remove('show');
+        });
+
+        refreshButton.addEventListener('click', () => {
+            fetchDepartures();
+        });
+
+        clearAllPinnedBtn.addEventListener('click', clearAllPinned);
+
+        // Einstellungen-Änderungen
+        document.getElementById('leadTime').addEventListener('change', (e) => {
+            const value = Math.max(1, Math.min(30, parseInt(e.target.value) || 5));
+            settings.leadTime = value;
+            e.target.value = value;
+            saveSettings();
+            checkNotifications();
+            renderDepartures();
+        });
+
+        document.getElementById('travelDuration').addEventListener('change', (e) => {
+            const value = Math.max(1, Math.min(120, parseInt(e.target.value) || 22));
+            settings.travelDuration = value;
+            e.target.value = value;
+            saveSettings();
+            renderDepartures();
+        });
+
+        document.getElementById('onlyPlatform2').addEventListener('change', (e) => {
+            settings.onlyPlatform2 = e.target.checked;
+            saveSettings();
+            fetchDepartures();
+        });
+
+        // Pull-to-Refresh
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].screenY;
+            const diff = touchStartY - touchEndY;
+            
+            if (diff > 100 && window.scrollY === 0) {
+                fetchDepartures();
+            }
+        }, { passive: true });
+
+        // Automatische Aktualisierung
+        setInterval(fetchDepartures, 30000);
+
+        // Initialisierung
+        function init() {
+            loadSettings();
+            updateNotificationStatus();
+            setupTestButtons();
+            fetchDepartures();
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
