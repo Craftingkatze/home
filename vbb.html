@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Fahrzeuge in Berlin</title>
+    <script src="https://craftingkatze.de/bvg/trainRoutes.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        #map {
+            height: 600px;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .popup-content {
+            max-width: 300px;
+        }
+        #trip-info {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        #trip-info h2 {
+            margin-top: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #station-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        #station-list div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        #station-list div:hover {
+            background-color: #bdc3c7;
+        }
+        #departure-times {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #ecf0f1;
+        }
+        .delayed {
+            color: red;
+        }
+        .on-time {
+            color: green;
+        }
+
+        .line-border {
+            border: 2px solid white; /* Weiße Border für die Linie */
+            
+        }
+        .map-buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-buttons button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .map-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        #locate-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+            transition: all 0.2s ease-in-out;
+        }
+
+        #locate-btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Stationen in deiner Nähe</h1>
+<button onclick="getNearbyStations()">Nahegelegene Stationen anzeigen</button>
+
+<h2>Abfahrtszeiten</h2>
+<div id="departure-times">Wählen Sie eine Station aus, um die Abfahrtszeiten anzuzeigen.</div>
+
+<h2>Nahegelegene Stationen</h2>
+<div id="station-list"></div>
+
+
+
+
+<div id="response-time" style="position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.7); color: white; padding: 5px; border-radius: 5px;">
+    Antwortzeit: <span id="response-time-value">0 ms</span>
+</div>
+    
+<h1>Live Fahrzeuge in Berlin</h1>
+<div id="controls">
+    <button class="button" onclick="toggleVisibility('S-Bahn')">S-Bahn</button>
+    <button class="button" onclick="toggleVisibility('U-Bahn')">U-Bahn</button>
+    <button class="button" onclick="toggleVisibility('Bus')">Bus</button>
+    <button class="button" onclick="toggleVisibility('ICE')">ICE</button>
+    <button class="button" onclick="toggleVisibility('Regional')">Regionalzüge</button>
+</div>
+
+<div id="map"></div>
+<div id="trip-info"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<div class="map-buttons">
+    <button onclick="centerOnUser()"> Meine Position</button>
+</div>
+<script>
+    const map = L.map('map').setView([52.5200, 13.4050], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+        
+    let vehicleMarkers = {}; // Dictionary für Fahrzeug-Marker
+    let userMarker = null; // Marker für den Benutzerstandort
+
+    // Farben für Linien
+    const lineColors = {
+        'S1': '#da6ba2',
+        'S2': '#007734',
+        'S25': '#007734',
+        'S26': '#007734',
+        'S3': '#0066ad',
+        'S41': '#ad5937',
+        'S42': '#cb6418',
+        'S45': '#cd9c53',
+        'S46': '#cd9c53',
+        'S47': '#cd9c53',
+        'S5': '#eb7405',
+        'S7': '#816da6',
+        'S75': '#816da6',
+        'S8': '#66aa22',
+        'S85': '#66aa22',
+        'S9': '#992746',
+        'U1': '#7dad4c',
+        'U2': '#da421e',
+        'U3': '#16683d',
+        'U4': '#f0d722',
+        'U5': '#7e5330',
+        'U6': '#8c6dab',
+        'U7': '#009bd5',
+        'U8': '#224f86',
+        'U9': '#f3791d',
+        'U12': '#1e05ff',
+        'RE': '#ff8800', // Regionalzug
+        'ICE': '#ff0000' // ICE
+    };
+
+    // Sichtbarkeit der Linien (U-Bahn, S-Bahn, Busse, etc.)
+    let visibleLines = {
+        'Bus': true,
+        'U-Bahn': true,
+        'S-Bahn': true,
+        'Regional': true,
+        'ICE': true
+    };
+
+    // Funktion zur Bestimmung des Verkehrsmittels basierend auf `productName`
+    function getMarkerType(vehicle) {
+        const productName = vehicle.line?.productName; // Extrahiere den `productName` aus der Antwort
+
+        // Überprüfe den `productName` und ordne das richtige Verkehrsmittel zu
+        if (productName === 'Bus') return 'Bus';
+        if (productName === 'U') return 'U-Bahn'; // "U" für U-Bahn
+        if (productName === 'S') return 'S-Bahn'; // "S" für S-Bahn
+        if (productName === 'RE') return 'Regional'; // Regionalzug
+        if (productName === 'ICE') return 'ICE'; // ICE
+        return 'Unbekannt'; // Standard, falls kein passender `productName` gefunden wird
+    }
+
+    // Funktion zur Aktualisierung der Fahrzeugmarker basierend auf der Sichtbarkeit der Linien
+    function updateVehicleMarkers() {
+        Object.values(vehicleMarkers).forEach(marker => {
+            const markerType = getMarkerType(marker); // Bestimme den Fahrzeugtyp
+
+            // Wenn der Typ des Fahrzeugs in den sichtbaren Linien enthalten ist, füge den Marker zur Karte hinzu
+            if (visibleLines[markerType]) {
+                marker.addTo(map);
+            } else {
+                map.removeLayer(marker); // Entferne den Marker, wenn er nicht sichtbar ist
+            }
+        });
+    }
+
+    // Funktion zur Aktualisierung des Benutzerstandorts
+
+let hasCenteredOnUser = false; // Neu hinzugefügt
+
+function updateUserLocation(position) {
+    const { latitude, longitude, accuracy } = position.coords;
+
+    // Nur beim ersten Standort-Update zentrieren
+    if (!hasCenteredOnUser) {
+        map.setView([latitude, longitude], 14);
+        hasCenteredOnUser = true;
+    }
+
+    if (userMarker) {
+        userMarker.setLatLng([latitude, longitude]);
+        userMarker.getPopup().setContent(`Dein Standort<br>Genauigkeit: ${accuracy} m`);
+    } else {
+        userMarker = L.marker([latitude, longitude], {
+            icon: L.icon({
+                iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/ec/RedDot.svg',
+                iconSize: [16, 16]
+            })
+        }).addTo(map).bindPopup(`Dein Standort<br>Genauigkeit: ${accuracy} m`);
+    }
+
+    // Fahrzeuge in der Nähe abrufen
+    fetchLiveVehicles(latitude, longitude);
+}
+
+    // Fehlerbehandlung für Geolocation
+    function errorHandler(error) {
+        console.error('Fehler beim Abrufen des Standorts:', error);
+    }
+
+    // Benutzerstandort abfragen und verfolgen
+    function requestUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(updateUserLocation, errorHandler, {
+                enableHighAccuracy: true
+            });
+        } else {
+            alert('Geolocation wird von diesem Browser nicht unterstützt.');
+        }
+    }
+
+    // Funktion zum Abrufen der Live-Fahrzeuge
+    async function fetchLiveVehicles(latitude, longitude) {
+        const startTime = Date.now(); // Startzeit für die Antwortzeit messen
+
+        try {
+            const bounds = map.getBounds(); // Sichtbarkeitsgrenzen der Karte
+            const north = bounds.getNorth();
+            const west = bounds.getWest();
+            const south = bounds.getSouth();
+            const east = bounds.getEast();
+
+            const response = await fetch(`https://v6.vbb.transport.rest/radar?north=${north}&west=${west}&south=${south}&east=${east}`);
+            const data = await response.json();
+
+            const responseTime = Date.now() - startTime;
+            document.getElementById('response-time-value').textContent = `${responseTime} ms`; // Antwortzeit anzeigen
+
+            if (data && data.movements) {
+                data.movements.forEach(vehicle => {
+                    if (vehicle.location) {
+                        const lat = vehicle.location.latitude;
+                        const lon = vehicle.location.longitude;
+
+                        if (bounds.contains([lat, lon])) {
+                            const line = vehicle.line?.name || 'Unbekannt';
+                            const label = line;
+                            const destination = vehicle.direction || 'Ziel unbekannt';
+
+                            // Hole die nächsten Stopps
+                            const nextStop = getNextStop(vehicle.nextStopovers);  // Hole den nächsten Stopp
+
+                            const markerId = vehicle.tripId;
+
+                            const markerType = getMarkerType(vehicle); // Bestimme den Fahrzeugtyp
+
+                            // Wenn der Marker bereits existiert, aktualisiere ihn
+                            if (vehicleMarkers[markerId]) {
+                                const marker = vehicleMarkers[markerId];
+                                marker.setLatLng([lat, lon]);
+                                marker.getPopup().setContent(`
+                                    <div class="popup-content">
+                                        <strong>Linie:</strong> ${label}<br>
+                                        <strong>Ziel:</strong> ${destination}<br>
+                                        <strong>Abfahrt von:</strong> ${nextStop}<br>  <strong>Verkehrsmittel:</strong> ${markerType}<br>
+                                        <button onclick="showTripDetails('${vehicle.tripId}')">Reisedetails anzeigen</button>
+                                    </div>
+                                `);
+                            } else {
+                                // Neuen Marker hinzufügen, wenn der Marker noch nicht existiert
+                                const marker = L.marker([lat, lon], {
+                                    icon: L.divIcon({
+                                        className: 'vehicle-marker',
+                                        html: `<div style="background-color: ${lineColors[line] || '#000000'}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white;"></div>`,
+                                        iconSize: [20, 20]
+                                    })
+                                }).addTo(map).bindPopup(`
+                                    <div class="popup-content">
+                                        <strong>Linie:</strong> ${label}<br>
+                                        <strong>Ziel:</strong> ${destination}<br>
+                                        <strong>Abfahrt von:</strong> ${nextStop}<br>  <strong>Verkehrsmittel:</strong> ${markerType}<br>
+                                        <button onclick="showTripDetails('${vehicle.tripId}')">Reisedetails anzeigen</button>
+                                    </div>
+                                `);
+                                vehicleMarkers[markerId] = marker; // Marker im Dictionary speichern
+                            }
+                        } else if (vehicleMarkers[markerId]) {
+                            // Wenn das Fahrzeug den Sichtbereich verlassen hat, Marker entfernen
+                            map.removeLayer(vehicleMarkers[markerId]);
+                            delete vehicleMarkers[markerId];
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Fehler beim Abrufen der Live-Fahrzeuge:', error);
+        }
+
+        // U-Bahn-Liste aktualisieren
+    }
+
+    // Funktion zur Ermittlung des nächsten Stopps
+    function getNextStop(nextStopovers) {
+        if (!nextStopovers || nextStopovers.length === 0) {
+            return 'Unbekannt';
+        }
+
+        // Hole den ersten Stop, der eine Abfahrt oder Ankunft hat
+        for (const stopover of nextStopovers) {
+            if (stopover.departure) {
+                return stopover.stop?.name || 'Unbekannt';
+            }
+        }
+
+        return 'Unbekannt';
+    }
+
+    function addStationMarkers(routePoints, lineColor) {
+        routePoints.forEach(point => {
+            L.circleMarker([point.xr, point.yr], {
+                color: lineColor,
+                radius: 5,
+                fillOpacity: 1
+            }).addTo(map)
+                .bindPopup(`<b>${point.station}</b><br>Linie: ${point.route}`);
+        });
+    }
+
+    // Stationsmarker für jede Route hinzufügen
+
+    addStationMarkers(u1Points, lineColors['U1']);
+    addStationMarkers(u2Points, lineColors['U2']);
+    addStationMarkers(u3Points, lineColors['U3']);
+    addStationMarkers(u4Points, lineColors['U4']);
+    addStationMarkers(u5Points, lineColors['U5']);
+    addStationMarkers(u6Points, lineColors['U6']);
+    addStationMarkers(u7Points, lineColors['U7']);
+    addStationMarkers(u8Points, lineColors['U8']);
+    addStationMarkers(u9Points, lineColors['U9']);
+    addStationMarkers(u12Points, lineColors['U12']);
+
+    // Füge hier weitere Aufrufe für andere Linien hinzu, wenn nötig
+
+    // Funktion zum Anzeigen der Reisedetails
+    async function showTripDetails(tripId) {
+        try {
+            const response = await fetch(`https://v6.vbb.transport.rest/trips/${encodeURIComponent(tripId)}`);
+            const tripData = await response.json();
+
+            if (tripData) {
+                const stopovers = tripData.trip.stopovers || [];
+                const polyline = tripData.trip.polyline;
+
+                let routeLayer = L.layerGroup().addTo(map);
+                const latlngs = [];
+                const line = tripData.trip.line || {};
+                const lineColor = line.color ? line.color.bg : lineColors[line.name] || 'red';
+
+                stopovers.forEach((stop, index) => {
+                    const stopLocation = stop.stop.location;
+                    if (stopLocation) {
+                        const lat = stopLocation.latitude;
+                        const lon = stopLocation.longitude;
+
+                        const pointMarker = L.circleMarker([lat, lon], {
+                            color: lineColor,
+                            radius: 6,
+                            fillOpacity: 1,
+                            weight: 2,
+                            zIndexOffset: 1000
+                        }).addTo(routeLayer)
+                            .bindPopup(`<b>${stop.stop.name}</b><br>Ankunft: ${stop.arrival} <br>Abfahrt: ${stop.departure}<br>Koordinaten: ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+
+                        latlngs.push([lat, lon]);
+
+                        const innerPoint = L.circleMarker([lat, lon], {
+                            color: 'white',
+                            radius: 3,
+                            weight: 1
+                        }).addTo(routeLayer);
+                    }
+                });
+
+                if (latlngs.length > 1) {
+                    L.polyline(latlngs, {
+                        color: lineColor,
+                        weight: 5,
+                        opacity: 1,
+                        dashArray: "5, 5",
+                        dashOffset: 10,
+                        className: 'line-border'
+                    }).addTo(routeLayer);
+                }
+
+                if (polyline && polyline.features) {
+                    const polylineCoords = polyline.features.map(feature => [
+                        feature.geometry.coordinates[1],
+                        feature.geometry.coordinates[0]
+                    ]);
+
+                    if (polylineCoords.length > 0) {
+                        L.polyline(latlngs, {
+                            color: 'white',
+                            weight: 7,
+                            opacity: 1
+                        }).addTo(routeLayer);
+
+                        L.polyline(latlngs, {
+                            color: lineColor,
+                            weight: 5,
+                            opacity: 1
+                        }).addTo(routeLayer);
+                    }
+                }
+
+            }
+        } catch (error) {
+            console.error('Fehler beim Abrufen der Reisedetails:', error);
+        }
+    }
+
+
+    requestUserLocation();
+    setInterval(() => {
+        if (userMarker) {
+            const { lat, lng } = userMarker.getLatLng();
+            fetchLiveVehicles(lat, lng);
+        }
+    }, 2000);
+
+
+
+
+function centerOnUser() {
+    if (userMarker) {
+        const { lat, lng } = userMarker.getLatLng();
+        map.setView([lat, lng], 17, { animate: true }); // näher ran
+        userMarker.openPopup();
+    } else {
+        alert("Standort noch nicht verfügbar!");
+    }
+}
+</script>
+
+
+<style>
+    .line-border {
+        border: 2px solid white; /* Weiße Border für die Linie */
+        z-index: 999; /* Sicherstellen, dass die Linie hinter den Punkten bleibt */
+    }
+
+    .leaflet-circle-marker {
+        z-index: 1000; /* Weiße Punkte immer über der Linie */
+    }
+</style>
+
+</body>
+</html>
