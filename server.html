@@ -71,7 +71,7 @@
         </style>
 </head>
 <body>
-<div id="winterPopup" style="
+<div id="winterPopup" onclick="closeWinterPopup()" style="
     position: fixed;
     inset: 0;
     background: #2c2c2c9c;
@@ -1486,6 +1486,10 @@ function getRealNameFromSpecialPlayers(minecraftName) {
             button.title = "Karte Offline";
         }
     }
+
+function closeWinterPopup() {
+    document.getElementById('winterPopup').style.display = 'none';
+}
 </script>
 </body>
 </html>
