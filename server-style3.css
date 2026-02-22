@@ -1,3 +1,44 @@
+/* =============================================
+   GLOBAL — verhindert horizontales Überlaufen
+   und sorgt für sicheren Abstand zum Rand
+   ============================================= */
+
+*, *::before, *::after {
+    box-sizing: border-box; /* Padding/Border wird in die Breite eingerechnet */
+}
+
+html, body {
+    max-width: 100%;          /* Nie breiter als der Bildschirm */
+    overflow-x: hidden;       /* Kein horizontales Scrollen */
+}
+
+/* Alle Block-Elemente dürfen nicht über den Viewport hinausragen */
+img, video, iframe, table, pre {
+    max-width: 100%;
+}
+
+/* Sicherer Abstand zum Bildschirmrand für den Seiten-Inhalt */
+body {
+    padding-left: env(safe-area-inset-left, 0px);   /* Notch-Unterstützung (iPhone) */
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Haupt-Container: immer mit Rand */
+.cards-container,
+.quotes-section,
+.player-list,
+.server-stat-item,
+.modal-content,
+.popup-content,
+.registered-players-popup {
+    max-width: 100%;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+}
+
+/* ============================================= */
+
 .server-ip {
     font-weight: bold;
 }
