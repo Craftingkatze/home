@@ -52,7 +52,7 @@
         </section>
         <br />
            
-        <section id="Kontakt" class="impressum">
+          <section id="Kontakt" class="impressum">
             <h2>Kontakt</h2>
             <p>Du hast eine Frage oder möchtest einfach Hallo sagen? Schreib mir gerne!</p>
 
@@ -124,15 +124,52 @@
             display: inline-block;
             margin: 10px;
             padding: 10px 20px;
-            background-color: #4CAF50; /* Green background */
-            color: white; /* White text */
-            text-decoration: none; /* No underline */
-            border-radius: 5px; /* Rounded corners */
-            transition: background-color 0.3s; /* Smooth transition */
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
         .project-button:hover {
-            background-color: #45a049; /* Darker green on hover */
+            background-color: #45a049;
         }
+
+        /* ── Kontaktformular ── */
+        #Kontakt form p {
+            margin-bottom: 14px;
+        }
+        #Kontakt label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: block;
+        }
+        #Kontakt input[type="text"],
+        #Kontakt textarea {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            background-color: #fafafa;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            outline: none;
+            display: block;
+            margin-top: 5px;
+        }
+        #Kontakt input[type="text"]:focus,
+        #Kontakt textarea:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            background-color: #fff;
+        }
+        #Kontakt textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
       	.centered-box {
             background: #fff;
             border-radius: 10px;
@@ -143,8 +180,6 @@
             width: 100%;
             margin: auto;
         }
-     
-
     </style>
 
     <hr>
