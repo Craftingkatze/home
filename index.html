@@ -51,30 +51,40 @@
          
         </section>
         <br />
-               <section id="Kontakt" class="impressum">
+           
+        <section id="Kontakt" class="impressum">
             <h2>Kontakt</h2>
             <p>Du hast eine Frage oder möchtest einfach Hallo sagen? Schreib mir gerne!</p>
 
-            <!--
-                WICHTIG: Ersetze "YOUR_FORM_ID" mit deiner eigenen Formspree-ID.
-                Gehe auf https://formspree.io, erstelle ein kostenloses Konto,
-                füge kontakt@vinicent.de als Ziel-E-Mail ein und kopiere deine Form-ID hierher.
-                Die ID sieht so aus: https://formspree.io/f/xyzabcde → ID = xyzabcde
-            -->
-            <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-                <p><label>Name<br><input type="text" name="name" placeholder="Dein Name" required></label></p>
-                <p><label>E-Mail<br><input type="email" name="email" placeholder="deine@email.de" required></label></p>
-                <p><label>Betreff<br><input type="text" name="betreff" placeholder="Worum geht es?"></label></p>
-                <p><label>Nachricht<br><textarea name="nachricht" rows="5" placeholder="Deine Nachricht..." required></textarea></label></p>
-                <input type="hidden" name="_next" value="https://deine-website.de/?danke=1">
-                <button type="submit" class="project-button">Nachricht senden</button>
+            <form onsubmit="sendMail(event)">
+                <p><label>Name<br><input type="text" id="contact-name" placeholder="Dein Name" required></label></p>
+                <p><label>E-Mail<br><input type="email" id="contact-email" placeholder="deine@email.de" required></label></p>
+                <p><label>Betreff<br><input type="text" id="contact-betreff" placeholder="Worum geht es?"></label></p>
+                <p><label>Nachricht<br><textarea id="contact-nachricht" rows="5" placeholder="Deine Nachricht..." required></textarea></label></p>
+                <button type="submit" class="project-button">Nachricht senden ✉️</button>
             </form>
         </section>
 
-        
         <br />
-        
     </main>
+
+    <script>
+        function sendMail(event) {
+            event.preventDefault();
+            var name     = document.getElementById('contact-name').value;
+            var email    = document.getElementById('contact-email').value;
+            var betreff  = document.getElementById('contact-betreff').value || 'Kontaktanfrage';
+            var nachricht = document.getElementById('contact-nachricht').value;
+
+            var body = 'Name: ' + name + '\n'
+                     + 'E-Mail: ' + email + '\n\n'
+                     + nachricht;
+
+            window.location.href = 'mailto:kontakt@vinicent.de'
+                + '?subject=' + encodeURIComponent(betreff)
+                + '&body='    + encodeURIComponent(body);
+        }
+    </script>
 
     <style>
         .hv {
