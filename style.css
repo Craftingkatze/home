@@ -343,26 +343,109 @@ button:hover {
         text-align: left;
     }
 }
+
 .projects {
-            text-align: center;
-            color: white;
-        }
+    text-align: center;
+    color: white;
+}
 
-        .project-buttons {
-            margin-top: 20px;
-        }
+.project-buttons {
+    margin-top: 20px;
+}
 
-        .project-button {
-            display: inline-block;
-            margin: 10px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
+.project-button {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
 
-        .project-button:hover {
-            background-color: #45a049;
-        }
+.project-button:hover {
+    background-color: #45a049;
+}
+
+
+/* ── Mobile Responsive Ergänzungen ── */
+
+@media (max-width: 600px) {
+
+    /* Nav: Links umbrechen statt überlappen */
+    nav {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    nav a {
+        float: none;
+        flex: 1 1 auto;
+        text-align: center;
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+
+    /* Header: kleinere Schrift */
+    h1 {
+        font-size: 2rem;
+    }
+
+    /* Main: weniger Außenabstand */
+    main {
+        padding: 1rem 0.75rem;
+    }
+
+    /* Impressum Boxen: volle Breite, kein seitlicher Überlauf */
+    .impressum,
+    .impressum1 {
+        padding: 14px;
+        border-radius: 6px;
+    }
+
+    /* Projekt-Buttons: gleichmäßig verteilt, breiter */
+    .project-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .project-button {
+        margin: 0;
+        flex: 1 1 calc(50% - 8px);
+        text-align: center;
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+
+    /* Kontaktformular: Felder auf volle Breite */
+    #Kontakt input[type="text"],
+    #Kontakt textarea {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* Footer: Buttons untereinander */
+    .footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 12px;
+    }
+
+    .footer a {
+        margin: 0;
+        width: 80%;
+        text-align: center;
+    }
+
+    /* Description Text: linksbündig auf kleinen Screens */
+    .description p {
+        text-align: left;
+        font-size: 1rem;
+    }
+}
