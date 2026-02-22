@@ -58,7 +58,6 @@
 
             <form onsubmit="sendMail(event)">
                 <p><label>Name<br><input type="text" id="contact-name" placeholder="Dein Name" required></label></p>
-                <p><label>E-Mail<br><input type="email" id="contact-email" placeholder="deine@email.de" required></label></p>
                 <p><label>Betreff<br><input type="text" id="contact-betreff" placeholder="Worum geht es?"></label></p>
                 <p><label>Nachricht<br><textarea id="contact-nachricht" rows="5" placeholder="Deine Nachricht..." required></textarea></label></p>
                 <button type="submit" class="project-button">Nachricht senden</button>
@@ -72,12 +71,10 @@
         function sendMail(event) {
             event.preventDefault();
             var name     = document.getElementById('contact-name').value;
-            var email    = document.getElementById('contact-email').value;
             var betreff  = document.getElementById('contact-betreff').value || 'Kontaktanfrage';
             var nachricht = document.getElementById('contact-nachricht').value;
 
             var body = 'Name: ' + name + '\n'
-                     + 'E-Mail: ' + email + '\n\n'
                      + nachricht;
 
             window.location.href = 'mailto:kontakt@vinicent.de'
