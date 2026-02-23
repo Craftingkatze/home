@@ -96,7 +96,6 @@
         <label><input type="checkbox" class="line-toggle" value="U7" checked> U7</label>
         <label><input type="checkbox" class="line-toggle" value="U8" checked> U8</label>
         <label><input type="checkbox" class="line-toggle" value="U9" checked> U9</label>
-        <label><input type="checkbox" class="line-toggle" value="U12" checked> U12</label>
     </div>
 
     <div id="svg-container" style="position: relative;"></div>
@@ -132,7 +131,7 @@
             d3.selectAll(`.live-train.${line}`).style("display", isVisible ? "inline" : "none");
         });
 
-        d3.xml("bvggrafik1.svg").then(function(xml) {
+        d3.xml("bvggrafik1a.svg").then(function(xml) {
             document.getElementById("svg-container").appendChild(xml.documentElement);
             svg = d3.select("svg");
             
