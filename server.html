@@ -60,7 +60,7 @@
             font-size: 18px;
             color: #bbb;
         ">
-            Startet im Winter 2026 ❄️
+            Startet im Winter 2026
         </p>
 
         <button onclick="document.getElementById('winterPopup').style.display='none'"
@@ -390,7 +390,7 @@
         SERVER_IP: "mc.craftingkatze.de",
         API_URL: "https://api.mcstatus.io/v2/status/java/mc.craftingkatze.de",
         SERVER_SHUTDOWN_DATE: '2026-01-11T00:30:00',
-        SCUFFED_ATTACK_2_DATE: '2025-11-07T18:00:00',
+        SCUFFED_ATTACK_2_DATE: '2026-12-32T23:59:59',
         CACHE_DURATION: 30000,
         RETRY_DELAY: 5000,
         MAX_RETRIES: 3
@@ -1042,7 +1042,8 @@ function getRealNameFromSpecialPlayers(minecraftName) {
             const indicatorElement = document.getElementById('status-indicator');
             
             if (statusElement && indicatorElement) {
-                statusElement.textContent = `Startet in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                //statusElement.textContent = `Startet in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                statusElement.textContent = `Scuffed Attack 3: Winter 2026`;
                 statusElement.style.color = 'orange';
                 indicatorElement.className = 'status-dot orange';
             }
