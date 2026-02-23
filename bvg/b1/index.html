@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BVG Berlin - Live</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="trainRoutes.js"></script>
-    <!-- Station-Panel einbinden -->
-    <script src="station-panel.js"></script>
+    <script src="trainRoutes.js"></script> 
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         #slider-container { 
@@ -130,32 +128,13 @@
         d3.selectAll(".line-toggle").on("change", function () {
             const line = this.value;
             const isVisible = this.checked;
+
             d3.selectAll(`.live-train.${line}`).style("display", isVisible ? "inline" : "none");
         });
 
         d3.xml("bvggrafik1.svg").then(function(xml) {
             document.getElementById("svg-container").appendChild(xml.documentElement);
             svg = d3.select("svg");
-            
-            // ── NEU: Station-Klick-Bindung ──────────────────────────────────
-            // Bindet Klick-Events an alle Stations-Elemente in der SVG.
-            // bindStationClicks ist in station-panel.js definiert.
-            if (typeof bindStationClicks === 'function') {
-                bindStationClicks(svg);
-            }
-
-            // Alternativ: Manuelle Station-Bindung falls deine SVG
-            // spezifische Elemente mit IDs oder Klassen hat, z.B.:
-            //
-            //   svg.selectAll('.station-circle').on('click', function(event, d) {
-            //       const id  = d3.select(this).attr('data-station-id');
-            //       const name = d3.select(this).attr('data-station-name') || id;
-            //       if (id) window.stationPanel.show(id, name);
-            //   });
-            //
-            // Oder direkt mit bekannter Stop-ID:
-            //   window.stationPanel.show('900000100003', 'Alexanderplatz');
-            // ────────────────────────────────────────────────────────────────
             
             // Tooltip für Stationen
             const stationinfo = d3.select("#stationinfo");
@@ -174,28 +153,37 @@
                 'U12': typeof u12Points !== 'undefined' ? u12Points : []
             };
             
+            // Funktion zum Finden des nächsten Punkts auf der Karte
             function findNearestPoint(lat, lon, line) {
                 const linePoints = allLines[line];
                 if (!linePoints || linePoints.length === 0) return null;
+                
                 let nearestPoint = null;
                 let minDistance = Infinity;
+                
                 linePoints.forEach(point => {
                     const distance = Math.sqrt(
                         Math.pow(point.xr - lat, 2) + 
                         Math.pow(point.yr - lon, 2)
                     );
+                    
                     if (distance < minDistance) {
                         minDistance = distance;
                         nearestPoint = point;
                     }
                 });
+                
                 return nearestPoint;
             }
             
+            // Funktion zum Finden der nächsten Station basierend auf der aktuellen Position
             function findNextStation(currentPoint, line, direction) {
                 const linePoints = allLines[line];
                 if (!linePoints || linePoints.length === 0) return "Unbekannt";
+                
                 let currentIndex = -1;
+                
+                // Finde den aktuellen Punkt in der Route
                 for (let i = 0; i < linePoints.length; i++) {
                     if (Math.abs(linePoints[i].x - currentPoint.x) < 5 && 
                         Math.abs(linePoints[i].y - currentPoint.y) < 5) {
@@ -203,8 +191,12 @@
                         break;
                     }
                 }
+                
                 if (currentIndex === -1) return "Unbekannt";
+                
+                // Bestimme die nächste Station basierend auf der Fahrtrichtung
                 if (direction === 1) {
+                    // Vorwärtsrichtung - suche nächste Station mit Namen
                     for (let i = currentIndex + 1; i < linePoints.length; i++) {
                         if (linePoints[i].station && 
                             !linePoints[i].station.includes("Zwischen") && 
@@ -212,8 +204,10 @@
                             return linePoints[i].station;
                         }
                     }
+                    // Wenn keine nächste Station gefunden, ist es die Endstation
                     return "ENDE";
                 } else {
+                    // Rückwärtsrichtung - suche vorherige Station mit Namen
                     for (let i = currentIndex - 1; i >= 0; i--) {
                         if (linePoints[i].station && 
                             !linePoints[i].station.includes("Zwischen") && 
@@ -221,16 +215,22 @@
                             return linePoints[i].station;
                         }
                     }
+                    // Wenn keine vorherige Station gefunden, ist es die Endstation
                     return "ENDE";
                 }
             }
             
+            // Funktion zum Bestimmen der Fahrtrichtung
             function determineDirection(prevTrain, currentPoint, line) {
-                if (!prevTrain) return 1;
+                if (!prevTrain) return 1; // Standard: vorwärts
+                
                 const linePoints = allLines[line];
                 if (!linePoints || linePoints.length < 2) return 1;
+                
                 let prevIndex = -1;
                 let currentIndex = -1;
+                
+                // Finde Indizes der vorherigen und aktuellen Position
                 for (let i = 0; i < linePoints.length; i++) {
                     if (Math.abs(linePoints[i].x - prevTrain.x) < 5 && 
                         Math.abs(linePoints[i].y - prevTrain.y) < 5) {
@@ -241,35 +241,63 @@
                         currentIndex = i;
                     }
                 }
+                
                 if (prevIndex === -1 || currentIndex === -1) return 1;
+                
                 return currentIndex > prevIndex ? 1 : -1;
             }
             
+            // Funktion zur Überprüfung auf Duplikate und Bereinigung
             function checkAndCleanDuplicates() {
+                // Setze existingTrainIds zurück
                 existingTrainIds.clear();
+                
+                // Finde alle existierenden Zug-Elemente im DOM
                 const existingTrainElements = document.querySelectorAll('[data-train-id]');
+                
+                // Map zur Verfolgung von Elementen pro ID
                 const elementsPerId = new Map();
+                
+                // Sammle alle Elemente pro ID
                 existingTrainElements.forEach(element => {
                     const trainId = element.getAttribute('data-train-id');
+                    
                     if (!elementsPerId.has(trainId)) {
                         elementsPerId.set(trainId, []);
                     }
                     elementsPerId.get(trainId).push(element);
+                    
+                    // Füge ID zum Set hinzu
                     existingTrainIds.add(trainId);
                 });
+                
+                // Entferne Duplikate (behalte nur das erste Element pro ID)
                 elementsPerId.forEach((elements, trainId) => {
                     if (elements.length > 1) {
+                        console.log(`Duplikat gefunden für ID ${trainId}: ${elements.length} Elemente`);
+                        
+                        // Behalte nur das erste Element, entferne die restlichen
                         for (let i = 1; i < elements.length; i++) {
+                            console.log(`Entferne Duplikat ${i} für ID ${trainId}`);
                             elements[i].remove();
                         }
                     }
                 });
+                
+                // Synchronisiere liveTrains-Objekt mit DOM
                 Object.keys(liveTrains).forEach(trainId => {
                     const existingElements = document.querySelectorAll(`[data-train-id="${trainId}"]`);
+                    
+                    // Wenn kein Element existiert, entferne aus liveTrains
                     if (existingElements.length === 0) {
                         delete liveTrains[trainId];
-                    } else if (existingElements.length > 1) {
+                    }
+                    // Wenn zu viele Elemente, bereinige
+                    else if (existingElements.length > 1) {
+                        // Aktualisiere liveTrains mit dem ersten Element
                         liveTrains[trainId].element = d3.select(existingElements[0]);
+                        
+                        // Entferne zusätzliche Elemente
                         for (let i = 1; i < existingElements.length; i++) {
                             existingElements[i].remove();
                         }
@@ -277,9 +305,12 @@
                 });
             }
             
+            // Live-Daten abrufen
             async function fetchLiveData() {
                 try {
+                    // Überprüfe zuerst auf Duplikate und bereinige
                     checkAndCleanDuplicates();
+                    
                     const response = await fetch(`https://v6.vbb.transport.rest/radar?north=52.5994968&west=13.1926072&south=52.4122984&east=13.6351573&results=1000`);
                     const data = await response.json();
 
@@ -294,11 +325,16 @@
                                 
                                 const line = vehicle.line.name;
                                 const tripId = vehicle.tripId;
+                                
+                                // Wenn keine Trip-ID vorhanden, überspringen
                                 if (!tripId) return;
                                 
+                                // Generiere eine eindeutige ID aus Trip-ID und Linie
                                 const uniqueId = `${line}_${tripId}`;
                                 
+                                // Prüfe ob diese ID bereits existiert
                                 if (existingTrainIds.has(uniqueId)) {
+                                    // ID existiert bereits - aktualisiere nur
                                     updatedTrainIds.add(uniqueId);
                                     trainIdsToRemove.delete(uniqueId);
                                     
@@ -310,9 +346,14 @@
 
                                     if (nearestPoint && liveTrains[uniqueId]) {
                                         const prevTrain = liveTrains[uniqueId];
+                                        
+                                        // Bestimme Fahrtrichtung
                                         const direction = determineDirection(prevTrain, nearestPoint, line);
+                                        
+                                        // Finde nächste Station
                                         const nextStation = findNextStation(nearestPoint, line, direction);
                                         
+                                        // Aktualisiere nur Position wenn sie sich geändert hat
                                         if (prevTrain.x !== nearestPoint.x || prevTrain.y !== nearestPoint.y) {
                                             if (prevTrain.element) {
                                                 prevTrain.element
@@ -321,6 +362,7 @@
                                             }
                                         }
                                         
+                                        // Aktualisiere Daten
                                         liveTrains[uniqueId] = {
                                             ...prevTrain,
                                             x: nearestPoint.x,
@@ -331,6 +373,7 @@
                                         };
                                     }
                                 } else {
+                                    // Neue ID - erstelle neuen Zug
                                     updatedTrainIds.add(uniqueId);
                                     trainIdsToRemove.delete(uniqueId);
                                     
@@ -341,9 +384,11 @@
                                     );
 
                                     if (nearestPoint) {
-                                        const direction = 1;
+                                        // Bestimme Fahrtrichtung
+                                        const direction = 1; // Standard für neue Züge
                                         const nextStation = findNextStation(nearestPoint, line, direction);
                                         
+                                        // Erstelle SVG-Element für neuen Zug
                                         const trainSvgPath = line === "U12" 
                                             ? "u12punkt1.svg" 
                                             : `${line.toLowerCase()}punkt1.svg`;
@@ -361,16 +406,20 @@
                                             train.setAttribute("class", `live-train ${line}`);
                                             train.setAttribute("data-train-id", uniqueId);
 
+                                            // Mouse Events für Tooltip
                                             train.addEventListener("mouseenter", function (event) {
                                                 const trainData = liveTrains[uniqueId];
                                                 const direction = trainData?.direction || "Unbekannt";
                                                 const nextStation = trainData?.nextStation || "Unbekannt";
+                                                
                                                 let tooltipText = `<strong>${line}</strong><br>Nach: ${direction}`;
+                                                
                                                 if (nextStation === "ENDE") {
                                                     tooltipText += `<br>Fahrt endet hier`;
                                                 } else {
                                                     tooltipText += `<br>Nächste Station: ${nextStation}`;
                                                 }
+                                                
                                                 stationinfo
                                                     .style("display", "block")
                                                     .html(tooltipText);
@@ -386,25 +435,7 @@
                                                 stationinfo.style("display", "none");
                                             });
 
-                                            // ── NEU: Klick auf Zug öffnet Abfahrtstafel der nächsten Station ──
-                                            train.addEventListener("click", async function () {
-                                                const trainData = liveTrains[uniqueId];
-                                                const stationName = trainData?.nextStation;
-                                                if (stationName && stationName !== "Unbekannt" && stationName !== "ENDE") {
-                                                    try {
-                                                        const res = await fetch(
-                                                            `https://v6.vbb.transport.rest/locations?query=${encodeURIComponent(stationName)}&results=1&stops=true&addresses=false&poi=false`
-                                                        );
-                                                        const locations = await res.json();
-                                                        if (locations && locations[0]) {
-                                                            window.stationPanel.show(locations[0].id, locations[0].name);
-                                                        }
-                                                    } catch(e) {
-                                                        console.error('Station lookup failed:', e);
-                                                    }
-                                                }
-                                            });
-
+                                            // Speichere Zug-Daten
                                             liveTrains[uniqueId] = {
                                                 element: trainElement,
                                                 line: line,
@@ -415,7 +446,9 @@
                                                 direction: vehicle.direction || "Unbekannt"
                                             };
                                             
+                                            // Füge zur ID-Liste hinzu
                                             existingTrainIds.add(uniqueId);
+                                            
                                             updateTrainCount();
                                             
                                         }).catch(error => console.error(`Fehler beim Laden von ${trainSvgPath}:`, error));
@@ -424,6 +457,7 @@
                             }
                         });
 
+                        // Entferne veraltete Züge (die nicht mehr in der API Response sind)
                         trainIdsToRemove.forEach(trainId => {
                             const oldTrain = liveTrains[trainId];
                             if (oldTrain && oldTrain.element) {
@@ -433,9 +467,10 @@
                             existingTrainIds.delete(trainId);
                         });
                         
+                        // Entferne Züge die zu alt sind (mehr als 2 Minuten nicht aktualisiert)
                         Object.keys(liveTrains).forEach(trainId => {
                             const train = liveTrains[trainId];
-                            if (currentTime - train.lastUpdated > 120000) {
+                            if (currentTime - train.lastUpdated > 120000) { // 2 Minuten
                                 if (train.element) {
                                     train.element.remove();
                                 }
@@ -444,8 +479,10 @@
                             }
                         });
 
+                        // Zeit anzeigen
                         document.getElementById('last-update').textContent = 
                             currentTime.toLocaleTimeString('de-DE');
+                            
                         updateTrainCount();
                     }
                 } catch (error) {
@@ -453,22 +490,31 @@
                 }
             }
             
+            // Funktion zum Aktualisieren der Zug-Anzahl
             function updateTrainCount() {
-                document.getElementById('train-count').textContent = existingTrainIds.size;
+                // Zähle nur eindeutige IDs
+                const uniqueCount = existingTrainIds.size;
+                document.getElementById('train-count').textContent = uniqueCount;
             }
 
+            // Live-Modus umschalten
             document.getElementById('toggle-live').addEventListener('click', function() {
                 liveMode = !liveMode;
                 this.textContent = liveMode ? 'Live-Daten deaktivieren' : 'Live-Daten aktivieren';
+                
                 if (liveMode) {
+                    // Vor dem Start bereinigen
                     checkAndCleanDuplicates();
                     fetchLiveData();
                     liveInterval = setInterval(fetchLiveData, 3000);
                 } else {
                     clearInterval(liveInterval);
+                    // Entferne alle Live-Züge
                     Object.keys(liveTrains).forEach(trainId => {
                         const train = liveTrains[trainId];
-                        if (train.element) train.element.remove();
+                        if (train.element) {
+                            train.element.remove();
+                        }
                     });
                     liveTrains = {};
                     existingTrainIds.clear();
@@ -476,6 +522,7 @@
                 }
             });
             
+            // Manuelle Aktualisierung
             document.getElementById('refresh-data').addEventListener('click', function() {
                 if (liveMode) {
                     checkAndCleanDuplicates();
@@ -483,6 +530,7 @@
                 }
             });
             
+            // Initialisiere Zug-Anzahl
             updateTrainCount();
             
         }).catch(error => console.error("Fehler beim Laden von bvggrafik.svg:", error));
