@@ -170,9 +170,41 @@
 
     <!-- Map -->
      <!--style="pointer-events: none; opacity: 0.5;"-->
-    <div class="server-card"  title="Klicke, um zur Server Map zu gelangen" onclick="window.open('http://www.map.craftingkatze.de/#world1:0:53:0:251:0:0:0:1:flat', '_blank')">
-        <span class="material-icons">map</span>
-        <span class="card-text">Server Map</span>
+    <div class="server-card" 
+     title="Klicke, um die Server Map zu öffnen" 
+     onclick="openMapPopup()">
+    <span class="material-icons">map</span>
+    <span class="card-text">Server Map</span>
+</div>
+</div>
+<!-- Map Popup -->
+<div id="map-popup" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+">
+
+    <button onclick="closeMapPopup()" style="
+        position:absolute;
+        top:20px;
+        right:30px;
+        font-size:30px;
+        background:none;
+        border:none;
+        color:white;
+        cursor:pointer;
+    ">×</button>
+
+    <div style="max-width:90%; max-height:90%; overflow:auto;">
+        <img src="map/test@3x.jpeg" style="width:100%; margin-bottom:20px; border-radius:12px;">
+        <img src="test2@3x.jpeg" style="width:100%; margin-bottom:20px; border-radius:12px;">
+        <img src="test3@3x.jpeg" style="width:100%; border-radius:12px;">
     </div>
 </div>
 <br>
@@ -1441,6 +1473,13 @@ function getRealNameFromSpecialPlayers(minecraftName) {
 
 function closeWinterPopup() {
     document.getElementById('winterPopup').style.display = 'none';
+}
+function openMapPopup() {
+    document.getElementById("map-popup").style.display = "flex";
+}
+
+function closeMapPopup() {
+    document.getElementById("map-popup").style.display = "none";
 }
 </script>
 </body>
