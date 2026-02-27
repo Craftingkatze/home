@@ -70,6 +70,20 @@
         .U8 { color: #224f86; }
         .U9 { color: #f3791d; }
         .U12 { color: #000768; }
+
+        /* Vollbild: Hintergrund weiß */
+        #svg-container:fullscreen {
+            background-color: white;
+        }
+        #svg-container:-webkit-full-screen {
+            background-color: white;
+        }
+        #svg-container:-moz-full-screen {
+            background-color: white;
+        }
+        ::backdrop {
+            background-color: white;
+        }
     </style>
 </head>
 <body>
