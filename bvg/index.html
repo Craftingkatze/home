@@ -13,7 +13,43 @@
             display: flex;
             flex-direction: row;
         }
-        svg { border: 1px solid #ccc; width: 100%; height: auto; }
+        #svg-container {
+            overflow: hidden;
+            width: 100%;
+            background: white;
+        }
+        svg { border: 1px solid #ccc; width: 100%; height: auto; display: block; }
+
+        /* Zoom Controls */
+        #zoom-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 999;
+        }
+        #svg-container:fullscreen #zoom-controls,
+        #svg-container:-webkit-full-screen #zoom-controls {
+            position: absolute;
+        }
+        .zoom-btn {
+            width: 38px;
+            height: 38px;
+            font-size: 22px;
+            line-height: 1;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .zoom-btn:hover { background: #3d5166; }
         .slider-label { display: block; margin-bottom: 5px; }
         .slider-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 10px; }
         #spawn-controls { margin-top: 20px; }
@@ -112,7 +148,13 @@
         <label><input type="checkbox" class="line-toggle" value="U9" checked> U9</label>
     </div>
 
-    <div id="svg-container" style="position: relative;"></div>
+    <div id="svg-container" style="position: relative;">
+        <div id="zoom-controls">
+            <button class="zoom-btn" id="zoom-in" title="Hineinzoomen">+</button>
+            <button class="zoom-btn" id="zoom-reset" title="Zurücksetzen" style="font-size:13px;">⌂</button>
+            <button class="zoom-btn" id="zoom-out" title="Herauszoomen">−</button>
+        </div>
+    </div>
     <div id="stationinfo" class="stationinfo" style="display: none;"></div>
 
     <script>
@@ -146,9 +188,59 @@
         });
 
         d3.xml("bvggrafik1a.svg").then(function(xml) {
-            document.getElementById("svg-container").appendChild(xml.documentElement);
+            // SVG vor den zoom-controls einfügen
+            const container = document.getElementById("svg-container");
+            const zoomControls = document.getElementById("zoom-controls");
+            container.insertBefore(xml.documentElement, zoomControls);
             svg = d3.select("svg");
-            
+
+            // ── Zoom & Pan Setup ──────────────────────────────────────────
+            const svgNode = svg.node();
+            const vb = svgNode.viewBox.baseVal;
+            const svgNativeW = vb.width  || 1000;
+            const svgNativeH = vb.height || 800;
+
+            // Alle Kinder in eine Wrapper-Gruppe packen
+            const zoomGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            zoomGroup.setAttribute("class", "zoom-layer");
+            while (svgNode.firstChild) zoomGroup.appendChild(svgNode.firstChild);
+            svgNode.appendChild(zoomGroup);
+            const zoomSel = d3.select(zoomGroup);
+
+            // SVG auf volle Größe setzen
+            svg.style("width", "100%").style("height", "100vh").style("display", "block");
+
+            function fitToScreen() {
+                const cw = container.clientWidth  || window.innerWidth;
+                const ch = container.clientHeight || window.innerHeight;
+                const scale = Math.min(cw / svgNativeW, ch / svgNativeH) * 0.97;
+                const tx = (cw - svgNativeW * scale) / 2;
+                const ty = (ch - svgNativeH * scale) / 2;
+                svg.call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+            }
+
+            const zoomBehavior = d3.zoom()
+                .scaleExtent([0.3, 10])
+                .on("zoom", (event) => {
+                    zoomSel.attr("transform", event.transform);
+                });
+
+            svg.call(zoomBehavior);
+            container.addEventListener("wheel", e => e.preventDefault(), { passive: false });
+
+            // Initiales Fit
+            setTimeout(fitToScreen, 50);
+
+            document.getElementById("zoom-in").addEventListener("click", () =>
+                svg.transition().duration(250).call(zoomBehavior.scaleBy, 1.5));
+            document.getElementById("zoom-out").addEventListener("click", () =>
+                svg.transition().duration(250).call(zoomBehavior.scaleBy, 1 / 1.5));
+            document.getElementById("zoom-reset").addEventListener("click", () => fitToScreen());
+
+            document.addEventListener("fullscreenchange", () => setTimeout(fitToScreen, 150));
+            window.addEventListener("resize", () => fitToScreen());
+            // ─────────────────────────────────────────────────────────────
+
             // Tooltip für Stationen
             const stationinfo = d3.select("#stationinfo");
             
