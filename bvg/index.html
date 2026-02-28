@@ -5,640 +5,506 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BVG Berlin - Live</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="trainRoutes.js"></script> 
+    <script src="trainRoutes.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        #slider-container { 
-            margin: 20px;
-            display: flex;
-            flex-direction: row;
-        }
-        #svg-container {
-            overflow: hidden;
-            width: 100%;
-            background: white;
-        }
-        svg { border: 1px solid #ccc; width: 100%; height: auto; display: block; }
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: #f4f7f6; }
+        h1 { color: #2c3e50; margin: 12px 0 4px; font-size: 1.4em; }
 
-        /* Zoom Controls */
+        .controls { margin: 6px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 0 10px; }
+
+        .control-button {
+            padding: 7px 14px; background: #2c3e50; color: white;
+            border: none; border-radius: 5px; cursor: pointer; font-size: 14px;
+        }
+        .control-button:hover { background: #3d5166; }
+        .control-button.active { background: #c0392b; }
+
+        /* Kartenmodus-Umschalter */
+        #map-mode-toggle { display: inline-flex; border-radius: 5px; overflow: hidden; border: 2px solid #2c3e50; }
+        #map-mode-toggle button {
+            padding: 7px 14px; border: none; cursor: pointer;
+            font-size: 14px; background: white; color: #2c3e50; transition: background .2s, color .2s;
+        }
+        #map-mode-toggle button.active { background: #2c3e50; color: white; }
+
+        .refresh-info { font-size: 13px; color: #666; margin: 3px 0 6px; }
+
+        #line-toggle-container { margin: 2px 0 8px; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 0 10px; }
+        #line-toggle-container label { font-size: 13px; cursor: pointer; }
+
+        /* Schematische Karte */
+        #svg-container { overflow: hidden; width: 100%; background: white; position: relative; }
+        #svg-container svg { border: 1px solid #ccc; width: 100%; height: auto; display: block; }
+
+        /* Leaflet */
+        #leaflet-container { display: none; width: 100%; height: 85vh; position: relative; }
+        #leaflet-map { width: 100%; height: 100%; }
+
+        /* Vollbild */
+        #svg-container:fullscreen,
+        #svg-container:-webkit-full-screen,
+        #svg-container:-moz-full-screen { background-color: white; }
+        ::backdrop { background-color: white; }
+
+        /* Zoom Buttons */
         #zoom-controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            z-index: 999;
+            position: fixed; bottom: 20px; right: 20px;
+            display: flex; flex-direction: column; gap: 6px; z-index: 999;
         }
-        #svg-container:fullscreen #zoom-controls,
-        #svg-container:-webkit-full-screen #zoom-controls {
-            position: absolute;
-        }
+        #svg-container:fullscreen #zoom-controls { position: absolute; }
         .zoom-btn {
-            width: 38px;
-            height: 38px;
-            font-size: 22px;
-            line-height: 1;
-            background: #2c3e50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
+            width: 38px; height: 38px; font-size: 22px;
+            background: #2c3e50; color: white; border: none;
+            border-radius: 6px; cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
         .zoom-btn:hover { background: #3d5166; }
-        .slider-label { display: block; margin-bottom: 5px; }
-        .slider-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 10px; }
-        #spawn-controls { margin-top: 20px; }
-        #auto-all { margin-top: 10px; }
-        
-        .stationinfo {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            pointer-events: none;
-            font-size: 14px;
-            z-index: 1000;
-            max-width: 250px;
-        }
-        
-        .live-train {
-            fill: currentColor;
-            stroke: white;
-            stroke-width: 2;
-            r: 8;
-            z-index: 10;
-        }
-        
-        .controls {
-            margin: 15px 0;
-        }
-        
-        .control-button {
-            padding: 8px 15px;
-            background-color: #2c3e50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        
-        .refresh-info {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #666;
-        }
-        
-        /* Linienfarben */
-        .U1 { color: #7dad4c; }
-        .U2 { color: #da421e; }
-        .U3 { color: #16683d; }
-        .U4 { color: #f0d722; }
-        .U5 { color: #7e5330; }
-        .U6 { color: #8c6dab; }
-        .U7 { color: #009bd5; }
-        .U8 { color: #224f86; }
-        .U9 { color: #f3791d; }
-        .U12 { color: #000768; }
 
-        /* Vollbild: Hintergrund weiß */
-        #svg-container:fullscreen {
-            background-color: white;
+        /* Leaflet Locate */
+        #locate-btn {
+            position: absolute; bottom: 30px; right: 10px; z-index: 1000;
+            background: #2c3e50; color: white; border: none; border-radius: 50%;
+            width: 44px; height: 44px; font-size: 20px; cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
         }
-        #svg-container:-webkit-full-screen {
-            background-color: white;
+        #locate-btn:hover { background: #3d5166; }
+
+        /* Tooltip */
+        .stationinfo {
+            position: fixed; background: rgba(44,62,80,0.93); color: white;
+            padding: 6px 11px; border-radius: 5px; pointer-events: none;
+            font-size: 13px; z-index: 9999; max-width: 240px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
         }
-        #svg-container:-moz-full-screen {
-            background-color: white;
-        }
-        ::backdrop {
-            background-color: white;
-        }
+
+        .U1{color:#7dad4c} .U2{color:#da421e} .U3{color:#16683d}
+        .U4{color:#f0d722} .U5{color:#7e5330} .U6{color:#8c6dab}
+        .U7{color:#009bd5} .U8{color:#224f86} .U9{color:#f3791d}
+        .U12{color:#000768}
     </style>
 </head>
 <body>
-    <h1>BVG Berlin - Live U-Bahn Tracker</h1>
 
-    <div class="controls">
-        <button id="toggle-live" class="control-button">Live-Daten aktivieren</button>
-        <button id="refresh-data" class="control-button">Daten aktualisieren</button>
-        <button id="fullscreen-toggle" class="control-button">Vollbild</button>
+<h1>BVG Berlin – Live U-Bahn Tracker</h1>
+
+<div class="controls">
+    <button id="toggle-live" class="control-button active">Live-Daten deaktivieren</button>
+    <button id="refresh-data" class="control-button">Aktualisieren</button>
+    <button id="fullscreen-toggle" class="control-button">Vollbild</button>
+    <div id="map-mode-toggle">
+        <button id="mode-schematic" class="active">🗺 Schematisch</button>
+        <button id="mode-real">🛰 Echte Karte</button>
     </div>
+</div>
 
-    <div class="refresh-info">
-        Letzte Aktualisierung: <span id="last-update">-</span>
-        | Aktive Züge: <span id="train-count">0</span>
+<div class="refresh-info">
+    Letzte Aktualisierung: <span id="last-update">–</span>
+    | Aktive Züge: <span id="train-count">0</span>
+</div>
+
+<div id="line-toggle-container">
+    <label><input type="checkbox" class="line-toggle" value="U1" checked> U1</label>
+    <label><input type="checkbox" class="line-toggle" value="U2" checked> U2</label>
+    <label><input type="checkbox" class="line-toggle" value="U3" checked> U3</label>
+    <label><input type="checkbox" class="line-toggle" value="U4" checked> U4</label>
+    <label><input type="checkbox" class="line-toggle" value="U5" checked> U5</label>
+    <label><input type="checkbox" class="line-toggle" value="U6" checked> U6</label>
+    <label><input type="checkbox" class="line-toggle" value="U7" checked> U7</label>
+    <label><input type="checkbox" class="line-toggle" value="U8" checked> U8</label>
+    <label><input type="checkbox" class="line-toggle" value="U9" checked> U9</label>
+</div>
+
+<!-- Schematische Karte -->
+<div id="svg-container" style="position: relative;">
+    <div id="zoom-controls">
+        <button class="zoom-btn" id="zoom-in" title="Hineinzoomen">+</button>
+        <button class="zoom-btn" id="zoom-reset" title="Zurücksetzen" style="font-size:13px;">⌂</button>
+        <button class="zoom-btn" id="zoom-out" title="Herauszoomen">−</button>
     </div>
+</div>
 
-    <div id="line-toggle-container" class="controls">
-        <label><input type="checkbox" class="line-toggle" value="U1" checked> U1</label>
-        <label><input type="checkbox" class="line-toggle" value="U2" checked> U2</label>
-        <label><input type="checkbox" class="line-toggle" value="U3" checked> U3</label>
-        <label><input type="checkbox" class="line-toggle" value="U4" checked> U4</label>
-        <label><input type="checkbox" class="line-toggle" value="U5" checked> U5</label>
-        <label><input type="checkbox" class="line-toggle" value="U6" checked> U6</label>
-        <label><input type="checkbox" class="line-toggle" value="U7" checked> U7</label>
-        <label><input type="checkbox" class="line-toggle" value="U8" checked> U8</label>
-        <label><input type="checkbox" class="line-toggle" value="U9" checked> U9</label>
-    </div>
+<!-- Echte Karte -->
+<div id="leaflet-container">
+    <div id="leaflet-map"></div>
+    <button id="locate-btn" title="Mein Standort">📍</button>
+</div>
 
-    <div id="svg-container" style="position: relative;">
-        <div id="zoom-controls">
-            <button class="zoom-btn" id="zoom-in" title="Hineinzoomen">+</button>
-            <button class="zoom-btn" id="zoom-reset" title="Zurücksetzen" style="font-size:13px;">⌂</button>
-            <button class="zoom-btn" id="zoom-out" title="Herauszoomen">−</button>
-        </div>
-    </div>
-    <div id="stationinfo" class="stationinfo" style="display: none;"></div>
+<div id="stationinfo" class="stationinfo" style="display:none;"></div>
 
-    <script>
-        // Karte laden
-        let svg;
-        let liveMode = false;
-        let liveInterval;
-        let liveTrains = {};
-        
-        // Set zur Überprüfung existierender IDs
-        let existingTrainIds = new Set();
-        
-        // Vollbild-Funktion
-        document.getElementById('fullscreen-toggle').addEventListener('click', function () {
-            const container = document.getElementById('svg-container');
-            if (!document.fullscreenElement) {
-                container.requestFullscreen().catch(err => {
-                    alert(`Fehler beim Aktivieren des Vollbildmodus: ${err.message}`);
-                });
-            } else {
-                document.exitFullscreen();
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+// ═══════════════════════════════════════
+// ZUSTAND
+// ═══════════════════════════════════════
+let svg, zoomBehavior, fitToScreen;
+let liveMode = true;
+let liveInterval;
+let liveTrains = {};
+let existingTrainIds = new Set();
+let currentMapMode = 'schematic';
+
+let leafletMap = null;
+let leafletMarkers = {}; // id -> { marker, line }
+let userMarker = null;
+
+const lineColors = {
+    U1:'#7dad4c', U2:'#da421e', U3:'#16683d', U4:'#f0d722',
+    U5:'#7e5330', U6:'#8c6dab', U7:'#009bd5', U8:'#224f86',
+    U9:'#f3791d', U12:'#1e05ff'
+};
+
+let visibleLines = {U1:true,U2:true,U3:true,U4:true,U5:true,U6:true,U7:true,U8:true,U9:true,U12:true};
+
+// ═══════════════════════════════════════
+// MODUS UMSCHALTEN
+// ═══════════════════════════════════════
+document.getElementById('mode-schematic').addEventListener('click', () => switchMode('schematic'));
+document.getElementById('mode-real').addEventListener('click', () => switchMode('real'));
+
+function switchMode(mode) {
+    currentMapMode = mode;
+    document.getElementById('mode-schematic').classList.toggle('active', mode==='schematic');
+    document.getElementById('mode-real').classList.toggle('active', mode==='real');
+    document.getElementById('svg-container').style.display = mode==='schematic' ? 'block' : 'none';
+    document.getElementById('zoom-controls').style.display = mode==='schematic' ? 'flex' : 'none';
+    document.getElementById('leaflet-container').style.display = mode==='real' ? 'block' : 'none';
+    document.getElementById('fullscreen-toggle').style.display = mode==='schematic' ? '' : 'none';
+
+    if (mode === 'real') {
+        initLeaflet();
+        setTimeout(() => leafletMap && leafletMap.invalidateSize(), 120);
+    }
+}
+
+// ═══════════════════════════════════════
+// LEAFLET
+// ═══════════════════════════════════════
+function initLeaflet() {
+    if (leafletMap) return;
+    leafletMap = L.map('leaflet-map').setView([52.520, 13.405], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(leafletMap);
+
+    // Stationsmarker
+    const linesData = {
+        U1:typeof u1Points!=='undefined'?u1Points:[],
+        U2:typeof u2Points!=='undefined'?u2Points:[],
+        U3:typeof u3Points!=='undefined'?u3Points:[],
+        U4:typeof u4Points!=='undefined'?u4Points:[],
+        U5:typeof u5Points!=='undefined'?u5Points:[],
+        U6:typeof u6Points!=='undefined'?u6Points:[],
+        U7:typeof u7Points!=='undefined'?u7Points:[],
+        U8:typeof u8Points!=='undefined'?u8Points:[],
+        U9:typeof u9Points!=='undefined'?u9Points:[],
+        U12:typeof u12Points!=='undefined'?u12Points:[]
+    };
+    Object.entries(linesData).forEach(([line, pts]) => {
+        pts.forEach(p => {
+            if (p.station && p.xr && p.yr) {
+                L.circleMarker([p.xr, p.yr], {
+                    radius:5, color:lineColors[line]||'#333',
+                    fillOpacity:1, weight:2
+                }).addTo(leafletMap).bindPopup(`<b>${p.station}</b><br>${line}`);
             }
         });
+    });
 
-        // Linien-Ein-/Ausblendung
-        d3.selectAll(".line-toggle").on("change", function () {
-            const line = this.value;
-            const isVisible = this.checked;
+    document.getElementById('locate-btn').addEventListener('click', () => {
+        if (userMarker) leafletMap.setView(userMarker.getLatLng(), 15, {animate:true});
+        else alert("Standort noch nicht verfügbar");
+    });
 
-            d3.selectAll(`.live-train.${line}`).style("display", isVisible ? "inline" : "none");
+    startGeoWatch();
+}
+
+function startGeoWatch() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.watchPosition(pos => {
+        const {latitude:lat, longitude:lng} = pos.coords;
+        if (!userMarker) {
+            userMarker = L.marker([lat,lng], {
+                icon: L.icon({iconUrl:'https://upload.wikimedia.org/wikipedia/commons/e/ec/RedDot.svg', iconSize:[14,14]})
+            }).addTo(leafletMap).bindPopup('Dein Standort');
+        } else {
+            userMarker.setLatLng([lat,lng]);
+        }
+    }, null, {enableHighAccuracy:true});
+}
+
+function updateLeafletTrains(movements) {
+    if (!leafletMap) return;
+    const seen = new Set();
+    movements.forEach(v => {
+        if (!v.line || v.line.productName!=='U' || !v.location || !v.line.name) return;
+        const line = v.line.name;
+        if (!visibleLines[line]) return;
+        const id = v.tripId; if (!id) return;
+        seen.add(id);
+        const lat = v.location.latitude, lng = v.location.longitude;
+        const dest = v.direction || '?';
+        const color = lineColors[line] || '#333';
+
+        if (leafletMarkers[id]) {
+            leafletMarkers[id].marker.setLatLng([lat,lng]);
+            leafletMarkers[id].marker.getPopup()?.setContent(`<b>${line}</b><br>→ ${dest}`);
+        } else {
+            const marker = L.circleMarker([lat,lng], {
+                radius:9, color:'white', fillColor:color, fillOpacity:1, weight:2.5
+            }).addTo(leafletMap).bindPopup(`<b>${line}</b><br>→ ${dest}`);
+            marker.on('click', () => marker.openPopup());
+            leafletMarkers[id] = { marker, line };
+        }
+    });
+
+    // Veraltete entfernen
+    Object.keys(leafletMarkers).forEach(id => {
+        if (!seen.has(id)) {
+            leafletMap.removeLayer(leafletMarkers[id].marker);
+            delete leafletMarkers[id];
+        }
+    });
+}
+
+// Linien-Checkboxen – Leaflet-Marker zeigen/verstecken
+document.querySelectorAll('.line-toggle').forEach(cb => {
+    cb.addEventListener('change', function() {
+        const line = this.value;
+        visibleLines[line] = this.checked;
+        // Schematisch
+        d3.selectAll(`.live-train.${line}`).style('display', this.checked ? 'inline' : 'none');
+        // Leaflet
+        Object.values(leafletMarkers).forEach(({marker, line:ml}) => {
+            if (ml === line) {
+                if (this.checked) marker.addTo(leafletMap);
+                else leafletMap?.removeLayer(marker);
+            }
         });
+    });
+});
 
-        d3.xml("bvggrafik1a.svg").then(function(xml) {
-            // SVG vor den zoom-controls einfügen
-            const container = document.getElementById("svg-container");
-            const zoomControls = document.getElementById("zoom-controls");
-            container.insertBefore(xml.documentElement, zoomControls);
-            svg = d3.select("svg");
+// ═══════════════════════════════════════
+// SCHEMATISCHE KARTE (D3)
+// ═══════════════════════════════════════
+document.getElementById('fullscreen-toggle').addEventListener('click', function() {
+    const c = document.getElementById('svg-container');
+    if (!document.fullscreenElement) c.requestFullscreen().catch(e=>alert(e.message));
+    else document.exitFullscreen();
+});
 
-            // ── Zoom & Pan Setup ──────────────────────────────────────────
-            const svgNode = svg.node();
-            const vb = svgNode.viewBox.baseVal;
-            const svgNativeW = vb.width  || 1000;
-            const svgNativeH = vb.height || 800;
+d3.xml("bvggrafik1a.svg").then(function(xml) {
+    const container = document.getElementById("svg-container");
+    const zoomControls = document.getElementById("zoom-controls");
+    container.insertBefore(xml.documentElement, zoomControls);
+    svg = d3.select("svg");
 
-            // Alle Kinder in eine Wrapper-Gruppe packen
-            const zoomGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            zoomGroup.setAttribute("class", "zoom-layer");
-            while (svgNode.firstChild) zoomGroup.appendChild(svgNode.firstChild);
-            svgNode.appendChild(zoomGroup);
-            const zoomSel = d3.select(zoomGroup);
+    const svgNode = svg.node();
+    const vb = svgNode.viewBox.baseVal;
+    const svgW = vb.width  || 1000;
+    const svgH = vb.height || 800;
 
-            // SVG auf volle Größe setzen
-            svg.style("width", "100%").style("height", "100vh").style("display", "block");
+    const zoomGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
+    zoomGroup.setAttribute("class","zoom-layer");
+    while (svgNode.firstChild) zoomGroup.appendChild(svgNode.firstChild);
+    svgNode.appendChild(zoomGroup);
+    const zoomSel = d3.select(zoomGroup);
 
-            function fitToScreen() {
-                const cw = container.clientWidth  || window.innerWidth;
-                const ch = container.clientHeight || window.innerHeight;
-                const scale = Math.min(cw / svgNativeW, ch / svgNativeH) * 0.97;
-                const tx = (cw - svgNativeW * scale) / 2;
-                const ty = (ch - svgNativeH * scale) / 2;
-                svg.call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
-            }
+    svg.style("width","100%").style("height","90vh").style("display","block");
 
-            const zoomBehavior = d3.zoom()
-                .scaleExtent([0.3, 10])
-                .on("zoom", (event) => {
-                    zoomSel.attr("transform", event.transform);
-                });
+    fitToScreen = function() {
+        const cw = container.clientWidth  || window.innerWidth;
+        const ch = container.clientHeight || window.innerHeight;
+        const s = Math.min(cw/svgW, ch/svgH) * 0.97;
+        svg.call(zoomBehavior.transform, d3.zoomIdentity.translate((cw-svgW*s)/2,(ch-svgH*s)/2).scale(s));
+    };
 
-            svg.call(zoomBehavior);
-            container.addEventListener("wheel", e => e.preventDefault(), { passive: false });
+    zoomBehavior = d3.zoom().scaleExtent([0.3,10])
+        .on("zoom", e => zoomSel.attr("transform", e.transform));
 
-            // Initiales Fit
-            setTimeout(fitToScreen, 50);
+    svg.call(zoomBehavior);
+    container.addEventListener("wheel", e=>e.preventDefault(), {passive:false});
+    setTimeout(fitToScreen, 50);
 
-            document.getElementById("zoom-in").addEventListener("click", () =>
-                svg.transition().duration(250).call(zoomBehavior.scaleBy, 1.5));
-            document.getElementById("zoom-out").addEventListener("click", () =>
-                svg.transition().duration(250).call(zoomBehavior.scaleBy, 1 / 1.5));
-            document.getElementById("zoom-reset").addEventListener("click", () => fitToScreen());
+    document.getElementById("zoom-in").addEventListener("click", () =>
+        svg.transition().duration(250).call(zoomBehavior.scaleBy, 1.5));
+    document.getElementById("zoom-out").addEventListener("click", () =>
+        svg.transition().duration(250).call(zoomBehavior.scaleBy, 1/1.5));
+    document.getElementById("zoom-reset").addEventListener("click", fitToScreen);
+    document.addEventListener("fullscreenchange", () => setTimeout(fitToScreen,150));
+    window.addEventListener("resize", fitToScreen);
 
-            document.addEventListener("fullscreenchange", () => setTimeout(fitToScreen, 150));
-            window.addEventListener("resize", () => fitToScreen());
-            // ─────────────────────────────────────────────────────────────
+    const stationinfo = d3.select("#stationinfo");
 
-            // Tooltip für Stationen
-            const stationinfo = d3.select("#stationinfo");
-            
-            // Alle Linien zusammenfassen
-            const allLines = {
-                'U1': typeof u1Points !== 'undefined' ? u1Points : [],
-                'U2': typeof u2Points !== 'undefined' ? u2Points : [],
-                'U3': typeof u3Points !== 'undefined' ? u3Points : [],
-                'U4': typeof u4Points !== 'undefined' ? u4Points : [],
-                'U5': typeof u5Points !== 'undefined' ? u5Points : [],
-                'U6': typeof u6Points !== 'undefined' ? u6Points : [],
-                'U7': typeof u7Points !== 'undefined' ? u7Points : [],
-                'U8': typeof u8Points !== 'undefined' ? u8Points : [],
-                'U9': typeof u9Points !== 'undefined' ? u9Points : [],
-                'U12': typeof u12Points !== 'undefined' ? u12Points : []
-            };
-            
-            // Funktion zum Finden des nächsten Punkts auf der Karte
-            function findNearestPoint(lat, lon, line) {
-                const linePoints = allLines[line];
-                if (!linePoints || linePoints.length === 0) return null;
-                
-                let nearestPoint = null;
-                let minDistance = Infinity;
-                
-                linePoints.forEach(point => {
-                    const distance = Math.sqrt(
-                        Math.pow(point.xr - lat, 2) + 
-                        Math.pow(point.yr - lon, 2)
-                    );
-                    
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        nearestPoint = point;
-                    }
-                });
-                
-                return nearestPoint;
-            }
-            
-            // Funktion zum Finden der nächsten Station basierend auf der aktuellen Position
-            function findNextStation(currentPoint, line, direction) {
-                const linePoints = allLines[line];
-                if (!linePoints || linePoints.length === 0) return "Unbekannt";
-                
-                let currentIndex = -1;
-                
-                // Finde den aktuellen Punkt in der Route
-                for (let i = 0; i < linePoints.length; i++) {
-                    if (Math.abs(linePoints[i].x - currentPoint.x) < 5 && 
-                        Math.abs(linePoints[i].y - currentPoint.y) < 5) {
-                        currentIndex = i;
-                        break;
-                    }
-                }
-                
-                if (currentIndex === -1) return "Unbekannt";
-                
-                // Bestimme die nächste Station basierend auf der Fahrtrichtung
-                if (direction === 1) {
-                    // Vorwärtsrichtung - suche nächste Station mit Namen
-                    for (let i = currentIndex + 1; i < linePoints.length; i++) {
-                        if (linePoints[i].station && 
-                            !linePoints[i].station.includes("Zwischen") && 
-                            !linePoints[i].station.includes("zwischen")) {
-                            return linePoints[i].station;
-                        }
-                    }
-                    // Wenn keine nächste Station gefunden, ist es die Endstation
-                    return "ENDE";
+    const allLines = {
+        U1:typeof u1Points!=='undefined'?u1Points:[],
+        U2:typeof u2Points!=='undefined'?u2Points:[],
+        U3:typeof u3Points!=='undefined'?u3Points:[],
+        U4:typeof u4Points!=='undefined'?u4Points:[],
+        U5:typeof u5Points!=='undefined'?u5Points:[],
+        U6:typeof u6Points!=='undefined'?u6Points:[],
+        U7:typeof u7Points!=='undefined'?u7Points:[],
+        U8:typeof u8Points!=='undefined'?u8Points:[],
+        U9:typeof u9Points!=='undefined'?u9Points:[],
+        U12:typeof u12Points!=='undefined'?u12Points:[]
+    };
+
+    function findNearestPoint(lat,lon,line) {
+        const pts=allLines[line]; if(!pts?.length) return null;
+        let best=null, minD=Infinity;
+        pts.forEach(p=>{const d=Math.hypot(p.xr-lat,p.yr-lon);if(d<minD){minD=d;best=p;}});
+        return best;
+    }
+    function findNextStation(cp,line,dir) {
+        const pts=allLines[line]; if(!pts?.length) return "Unbekannt";
+        let ci=-1;
+        for(let i=0;i<pts.length;i++){if(Math.abs(pts[i].x-cp.x)<5&&Math.abs(pts[i].y-cp.y)<5){ci=i;break;}}
+        if(ci===-1) return "Unbekannt";
+        const arr=dir===1?pts.slice(ci+1):pts.slice(0,ci).reverse();
+        for(const p of arr){if(p.station&&!p.station.toLowerCase().includes("zwischen"))return p.station;}
+        return "ENDE";
+    }
+    function determineDirection(prev,cp,line) {
+        const pts=allLines[line]; if(!pts||pts.length<2) return 1;
+        let pi=-1,ci=-1;
+        pts.forEach((p,i)=>{
+            if(Math.abs(p.x-prev.x)<5&&Math.abs(p.y-prev.y)<5)pi=i;
+            if(Math.abs(p.x-cp.x)<5&&Math.abs(p.y-cp.y)<5)ci=i;
+        });
+        return(pi===-1||ci===-1)?1:(ci>pi?1:-1);
+    }
+    function checkAndCleanDuplicates() {
+        existingTrainIds.clear();
+        const elems=document.querySelectorAll('[data-train-id]');
+        const map=new Map();
+        elems.forEach(el=>{
+            const id=el.getAttribute('data-train-id');
+            existingTrainIds.add(id);
+            if(!map.has(id))map.set(id,[]);
+            map.get(id).push(el);
+        });
+        map.forEach((els,id)=>{for(let i=1;i<els.length;i++)els[i].remove();});
+        Object.keys(liveTrains).forEach(id=>{
+            const els=document.querySelectorAll(`[data-train-id="${id}"]`);
+            if(els.length===0)delete liveTrains[id];
+            else if(els.length>1){liveTrains[id].element=d3.select(els[0]);for(let i=1;i<els.length;i++)els[i].remove();}
+        });
+    }
+
+    // ── Haupt-Fetch (für beide Modi)
+    async function fetchLiveData() {
+        try {
+            checkAndCleanDuplicates();
+            const res = await fetch('https://v6.vbb.transport.rest/radar?north=52.5994968&west=13.1926072&south=52.4122984&east=13.6351573&results=1000');
+            const data = await res.json();
+            if (!data?.movements) return;
+            const now = new Date();
+
+            // Leaflet updaten
+            if (currentMapMode === 'real') updateLeafletTrains(data.movements);
+
+            // Schematisch updaten
+            const toRemove = new Set(Object.keys(liveTrains));
+
+            data.movements.forEach(v => {
+                if (!v.line||v.line.productName!=='U'||!v.location||!v.line.name) return;
+                const line=v.line.name, tripId=v.tripId;
+                if(!tripId) return;
+                const uid=`${line}_${tripId}`;
+                toRemove.delete(uid);
+                const np=findNearestPoint(v.location.latitude,v.location.longitude,line);
+                if(!np) return;
+
+                if (existingTrainIds.has(uid) && liveTrains[uid]) {
+                    const prev=liveTrains[uid];
+                    const dir=determineDirection(prev,np,line);
+                    if((prev.x!==np.x||prev.y!==np.y)&&prev.element)
+                        prev.element.attr("x",np.x).attr("y",np.y);
+                    liveTrains[uid]={...prev,x:np.x,y:np.y,lastUpdated:now,
+                        nextStation:findNextStation(np,line,dir),direction:v.direction||"Unbekannt"};
                 } else {
-                    // Rückwärtsrichtung - suche vorherige Station mit Namen
-                    for (let i = currentIndex - 1; i >= 0; i--) {
-                        if (linePoints[i].station && 
-                            !linePoints[i].station.includes("Zwischen") && 
-                            !linePoints[i].station.includes("zwischen")) {
-                            return linePoints[i].station;
-                        }
-                    }
-                    // Wenn keine vorherige Station gefunden, ist es die Endstation
-                    return "ENDE";
-                }
-            }
-            
-            // Funktion zum Bestimmen der Fahrtrichtung
-            function determineDirection(prevTrain, currentPoint, line) {
-                if (!prevTrain) return 1; // Standard: vorwärts
-                
-                const linePoints = allLines[line];
-                if (!linePoints || linePoints.length < 2) return 1;
-                
-                let prevIndex = -1;
-                let currentIndex = -1;
-                
-                // Finde Indizes der vorherigen und aktuellen Position
-                for (let i = 0; i < linePoints.length; i++) {
-                    if (Math.abs(linePoints[i].x - prevTrain.x) < 5 && 
-                        Math.abs(linePoints[i].y - prevTrain.y) < 5) {
-                        prevIndex = i;
-                    }
-                    if (Math.abs(linePoints[i].x - currentPoint.x) < 5 && 
-                        Math.abs(linePoints[i].y - currentPoint.y) < 5) {
-                        currentIndex = i;
-                    }
-                }
-                
-                if (prevIndex === -1 || currentIndex === -1) return 1;
-                
-                return currentIndex > prevIndex ? 1 : -1;
-            }
-            
-            // Funktion zur Überprüfung auf Duplikate und Bereinigung
-            function checkAndCleanDuplicates() {
-                // Setze existingTrainIds zurück
-                existingTrainIds.clear();
-                
-                // Finde alle existierenden Zug-Elemente im DOM
-                const existingTrainElements = document.querySelectorAll('[data-train-id]');
-                
-                // Map zur Verfolgung von Elementen pro ID
-                const elementsPerId = new Map();
-                
-                // Sammle alle Elemente pro ID
-                existingTrainElements.forEach(element => {
-                    const trainId = element.getAttribute('data-train-id');
-                    
-                    if (!elementsPerId.has(trainId)) {
-                        elementsPerId.set(trainId, []);
-                    }
-                    elementsPerId.get(trainId).push(element);
-                    
-                    // Füge ID zum Set hinzu
-                    existingTrainIds.add(trainId);
-                });
-                
-                // Entferne Duplikate (behalte nur das erste Element pro ID)
-                elementsPerId.forEach((elements, trainId) => {
-                    if (elements.length > 1) {
-                        console.log(`Duplikat gefunden für ID ${trainId}: ${elements.length} Elemente`);
-                        
-                        // Behalte nur das erste Element, entferne die restlichen
-                        for (let i = 1; i < elements.length; i++) {
-                            console.log(`Entferne Duplikat ${i} für ID ${trainId}`);
-                            elements[i].remove();
-                        }
-                    }
-                });
-                
-                // Synchronisiere liveTrains-Objekt mit DOM
-                Object.keys(liveTrains).forEach(trainId => {
-                    const existingElements = document.querySelectorAll(`[data-train-id="${trainId}"]`);
-                    
-                    // Wenn kein Element existiert, entferne aus liveTrains
-                    if (existingElements.length === 0) {
-                        delete liveTrains[trainId];
-                    }
-                    // Wenn zu viele Elemente, bereinige
-                    else if (existingElements.length > 1) {
-                        // Aktualisiere liveTrains mit dem ersten Element
-                        liveTrains[trainId].element = d3.select(existingElements[0]);
-                        
-                        // Entferne zusätzliche Elemente
-                        for (let i = 1; i < existingElements.length; i++) {
-                            existingElements[i].remove();
-                        }
-                    }
-                });
-            }
-            
-            // Live-Daten abrufen
-            async function fetchLiveData() {
-                try {
-                    // Überprüfe zuerst auf Duplikate und bereinige
-                    checkAndCleanDuplicates();
-                    
-                    const response = await fetch(`https://v6.vbb.transport.rest/radar?north=52.5994968&west=13.1926072&south=52.4122984&east=13.6351573&results=1000`);
-                    const data = await response.json();
+                    const path=line==="U12"?"u12punkt1.svg":`${line.toLowerCase()}punkt1.svg`;
+                    d3.xml(path).then(tx=>{
+                        const train=svg.node().appendChild(tx.documentElement);
+                        const bb=train.getBBox(), sc=0.5;
+                        train.setAttribute("width",  bb.width*sc);
+                        train.setAttribute("height", bb.height*sc);
+                        train.setAttribute("x", np.x);
+                        train.setAttribute("y", np.y);
+                        train.setAttribute("class",`live-train ${line}`);
+                        train.setAttribute("data-train-id", uid);
+                        if(!visibleLines[line]) train.style.display='none';
 
-                    if (data && data.movements) {
-                        const updatedTrainIds = new Set();
-                        const trainIdsToRemove = new Set(Object.keys(liveTrains));
-                        const currentTime = new Date();
-
-                        data.movements.forEach(vehicle => {
-                            if (vehicle.line && vehicle.line.productName === 'U' && 
-                                vehicle.location && vehicle.line.name) {
-                                
-                                const line = vehicle.line.name;
-                                const tripId = vehicle.tripId;
-                                
-                                // Wenn keine Trip-ID vorhanden, überspringen
-                                if (!tripId) return;
-                                
-                                // Generiere eine eindeutige ID aus Trip-ID und Linie
-                                const uniqueId = `${line}_${tripId}`;
-                                
-                                // Prüfe ob diese ID bereits existiert
-                                if (existingTrainIds.has(uniqueId)) {
-                                    // ID existiert bereits - aktualisiere nur
-                                    updatedTrainIds.add(uniqueId);
-                                    trainIdsToRemove.delete(uniqueId);
-                                    
-                                    const nearestPoint = findNearestPoint(
-                                        vehicle.location.latitude, 
-                                        vehicle.location.longitude, 
-                                        line
-                                    );
-
-                                    if (nearestPoint && liveTrains[uniqueId]) {
-                                        const prevTrain = liveTrains[uniqueId];
-                                        
-                                        // Bestimme Fahrtrichtung
-                                        const direction = determineDirection(prevTrain, nearestPoint, line);
-                                        
-                                        // Finde nächste Station
-                                        const nextStation = findNextStation(nearestPoint, line, direction);
-                                        
-                                        // Aktualisiere nur Position wenn sie sich geändert hat
-                                        if (prevTrain.x !== nearestPoint.x || prevTrain.y !== nearestPoint.y) {
-                                            if (prevTrain.element) {
-                                                prevTrain.element
-                                                    .attr("x", nearestPoint.x)
-                                                    .attr("y", nearestPoint.y);
-                                            }
-                                        }
-                                        
-                                        // Aktualisiere Daten
-                                        liveTrains[uniqueId] = {
-                                            ...prevTrain,
-                                            x: nearestPoint.x,
-                                            y: nearestPoint.y,
-                                            lastUpdated: currentTime,
-                                            nextStation: nextStation,
-                                            direction: vehicle.direction || "Unbekannt"
-                                        };
-                                    }
-                                } else {
-                                    // Neue ID - erstelle neuen Zug
-                                    updatedTrainIds.add(uniqueId);
-                                    trainIdsToRemove.delete(uniqueId);
-                                    
-                                    const nearestPoint = findNearestPoint(
-                                        vehicle.location.latitude, 
-                                        vehicle.location.longitude, 
-                                        line
-                                    );
-
-                                    if (nearestPoint) {
-                                        // Bestimme Fahrtrichtung
-                                        const direction = 1; // Standard für neue Züge
-                                        const nextStation = findNextStation(nearestPoint, line, direction);
-                                        
-                                        // Erstelle SVG-Element für neuen Zug
-                                        const trainSvgPath = line === "U12" 
-                                            ? "u12punkt1.svg" 
-                                            : `${line.toLowerCase()}punkt1.svg`;
-
-                                        d3.xml(trainSvgPath).then(function(trainXml) {
-                                            const train = svg.node().appendChild(trainXml.documentElement);
-                                            const trainElement = d3.select(train);
-
-                                            const bbox = train.getBBox();
-                                            const scale = 0.5;
-                                            train.setAttribute("width", bbox.width * scale);
-                                            train.setAttribute("height", bbox.height * scale);
-                                            train.setAttribute("x", nearestPoint.x);
-                                            train.setAttribute("y", nearestPoint.y);
-                                            train.setAttribute("class", `live-train ${line}`);
-                                            train.setAttribute("data-train-id", uniqueId);
-
-                                            // Mouse Events für Tooltip
-                                            train.addEventListener("mouseenter", function (event) {
-                                                const trainData = liveTrains[uniqueId];
-                                                const direction = trainData?.direction || "Unbekannt";
-                                                const nextStation = trainData?.nextStation || "Unbekannt";
-                                                
-                                                let tooltipText = `<strong>${line}</strong><br>Nach: ${direction}`;
-                                                
-                                                if (nextStation === "ENDE") {
-                                                    tooltipText += `<br>Fahrt endet hier`;
-                                                } else {
-                                                    tooltipText += `<br>Nächste Station: ${nextStation}`;
-                                                }
-                                                
-                                                stationinfo
-                                                    .style("display", "block")
-                                                    .html(tooltipText);
-                                            });
-                                            
-                                            train.addEventListener("mousemove", function (event) {
-                                                stationinfo
-                                                    .style("left", (event.pageX + 10) + "px")
-                                                    .style("top", (event.pageY + 10) + "px");
-                                            });
-                                            
-                                            train.addEventListener("mouseleave", function () {
-                                                stationinfo.style("display", "none");
-                                            });
-
-                                            // Speichere Zug-Daten
-                                            liveTrains[uniqueId] = {
-                                                element: trainElement,
-                                                line: line,
-                                                lastUpdated: currentTime,
-                                                x: nearestPoint.x,
-                                                y: nearestPoint.y,
-                                                nextStation: nextStation,
-                                                direction: vehicle.direction || "Unbekannt"
-                                            };
-                                            
-                                            // Füge zur ID-Liste hinzu
-                                            existingTrainIds.add(uniqueId);
-                                            
-                                            updateTrainCount();
-                                            
-                                        }).catch(error => console.error(`Fehler beim Laden von ${trainSvgPath}:`, error));
-                                    }
-                                }
-                            }
+                        train.addEventListener("mouseenter",()=>{
+                            const td=liveTrains[uid];
+                            const ns=td?.nextStation||"Unbekannt";
+                            stationinfo.style("display","block")
+                                .html(`<strong>${line}</strong><br>→ ${td?.direction||'?'}`+
+                                      (ns==="ENDE"?"<br>Fahrt endet hier":`<br>Nächste: ${ns}`));
                         });
-
-                        // Entferne veraltete Züge (die nicht mehr in der API Response sind)
-                        trainIdsToRemove.forEach(trainId => {
-                            const oldTrain = liveTrains[trainId];
-                            if (oldTrain && oldTrain.element) {
-                                oldTrain.element.remove();
-                            }
-                            delete liveTrains[trainId];
-                            existingTrainIds.delete(trainId);
+                        train.addEventListener("mousemove",e=>{
+                            stationinfo.style("left",(e.clientX+12)+"px").style("top",(e.clientY+12)+"px");
                         });
-                        
-                        // Entferne Züge die zu alt sind (mehr als 2 Minuten nicht aktualisiert)
-                        Object.keys(liveTrains).forEach(trainId => {
-                            const train = liveTrains[trainId];
-                            if (currentTime - train.lastUpdated > 120000) { // 2 Minuten
-                                if (train.element) {
-                                    train.element.remove();
-                                }
-                                delete liveTrains[trainId];
-                                existingTrainIds.delete(trainId);
-                            }
-                        });
+                        train.addEventListener("mouseleave",()=>stationinfo.style("display","none"));
 
-                        // Zeit anzeigen
-                        document.getElementById('last-update').textContent = 
-                            currentTime.toLocaleTimeString('de-DE');
-                            
+                        liveTrains[uid]={
+                            element:d3.select(train),line,lastUpdated:now,
+                            x:np.x,y:np.y,nextStation:findNextStation(np,line,1),
+                            direction:v.direction||"Unbekannt"
+                        };
+                        existingTrainIds.add(uid);
                         updateTrainCount();
-                    }
-                } catch (error) {
-                    console.error("Fehler beim Abrufen der Live-Daten:", error);
+                    }).catch(()=>{});
                 }
-            }
-            
-            // Funktion zum Aktualisieren der Zug-Anzahl
-            function updateTrainCount() {
-                // Zähle nur eindeutige IDs
-                const uniqueCount = existingTrainIds.size;
-                document.getElementById('train-count').textContent = uniqueCount;
-            }
+            });
 
-            // Live-Modus umschalten
-            document.getElementById('toggle-live').addEventListener('click', function() {
-                liveMode = !liveMode;
-                this.textContent = liveMode ? 'Live-Daten deaktivieren' : 'Live-Daten aktivieren';
-                
-                if (liveMode) {
-                    // Vor dem Start bereinigen
-                    checkAndCleanDuplicates();
-                    fetchLiveData();
-                    liveInterval = setInterval(fetchLiveData, 3000);
-                } else {
-                    clearInterval(liveInterval);
-                    // Entferne alle Live-Züge
-                    Object.keys(liveTrains).forEach(trainId => {
-                        const train = liveTrains[trainId];
-                        if (train.element) {
-                            train.element.remove();
-                        }
-                    });
-                    liveTrains = {};
-                    existingTrainIds.clear();
-                    updateTrainCount();
+            toRemove.forEach(id=>{
+                liveTrains[id]?.element?.remove();
+                delete liveTrains[id]; existingTrainIds.delete(id);
+            });
+            Object.keys(liveTrains).forEach(id=>{
+                if(now-liveTrains[id].lastUpdated>120000){
+                    liveTrains[id]?.element?.remove();
+                    delete liveTrains[id]; existingTrainIds.delete(id);
                 }
             });
-            
-            // Manuelle Aktualisierung
-            document.getElementById('refresh-data').addEventListener('click', function() {
-                if (liveMode) {
-                    checkAndCleanDuplicates();
-                    fetchLiveData();
-                }
-            });
-            
-            // Initialisiere Zug-Anzahl
+
+            document.getElementById('last-update').textContent=now.toLocaleTimeString('de-DE');
             updateTrainCount();
-            
-        }).catch(error => console.error("Fehler beim Laden von bvggrafik.svg:", error));
-    </script>
+        } catch(e){console.error("Fehler:",e);}
+    }
+
+    function updateTrainCount() {
+        document.getElementById('train-count').textContent=existingTrainIds.size;
+    }
+
+    // Toggle-Button
+    document.getElementById('toggle-live').addEventListener('click', function() {
+        liveMode=!liveMode;
+        this.textContent=liveMode?'Live-Daten deaktivieren':'Live-Daten aktivieren';
+        this.classList.toggle('active',liveMode);
+        if(liveMode){
+            checkAndCleanDuplicates(); fetchLiveData();
+            liveInterval=setInterval(fetchLiveData,3000);
+        } else {
+            clearInterval(liveInterval);
+            Object.keys(liveTrains).forEach(id=>{liveTrains[id]?.element?.remove();});
+            liveTrains={}; existingTrainIds.clear();
+            Object.values(leafletMarkers).forEach(({marker})=>leafletMap?.removeLayer(marker));
+            leafletMarkers={};
+            updateTrainCount();
+        }
+    });
+
+    document.getElementById('refresh-data').addEventListener('click',()=>{if(liveMode)fetchLiveData();});
+
+    // ── AUTOMATISCH STARTEN
+    fetchLiveData();
+    liveInterval=setInterval(fetchLiveData,3000);
+
+}).catch(e=>console.error("SVG-Fehler:",e));
+</script>
 </body>
 </html>
