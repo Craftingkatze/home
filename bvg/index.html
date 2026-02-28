@@ -175,18 +175,35 @@ const lineColors = {
     U9:'#f3791d', U12:'#1e05ff'
 };
 
-// Farben nach Produkttyp für die echte Karte
-function getProductColor(productName, lineName) {
-    // Erst nach Linie schauen (U-Bahn-Linien)
+// Fallback-Farben nach Produkttyp
+function getFallbackColor(productName, lineName) {
     if (lineName && lineColors[lineName]) return lineColors[lineName];
     switch ((productName || '').toUpperCase()) {
-        case 'U':     return '#224f86'; // U-Bahn blau
-        case 'S':     return '#27ae60'; // S-Bahn rot
-        case 'BUS':   return '#e67e22'; // Bus orange
-        case 'TRAM':  return '#c0392b'; // Straßenbahn grün
-        case 'FERRY': return '#8e44ad'; // Fähre lila
-        default:      return '#7f8c8d'; // Sonstige grau
+        case 'U':     return '#224f86';
+        case 'S':     return '#c0392b';
+        case 'BUS':   return '#e67e22';
+        case 'TRAM':  return '#27ae60';
+        case 'FERRY': return '#8e44ad';
+        default:      return '#7f8c8d';
     }
+}
+
+// Gibt { fillColor, borderColor } zurück
+// fillColor  = color.bg aus API  (Innenfläche des Kreises)
+// borderColor = color.fg aus API  (Rand des Kreises)
+// Fallback: beide = getFallbackColor
+function getMarkerColors(v) {
+    const productName = v.line?.productName || '';
+    const lineName    = productName === 'U' ? v.line?.name : null;
+    const fallback    = getFallbackColor(productName, lineName);
+
+    const apiBg = v.line?.color?.bg;
+    const apiFg = v.line?.color?.fg;
+
+    return {
+        fillColor:   apiBg || fallback,
+        borderColor: apiFg || fallback
+    };
 }
 
 function getProductLabel(productName) {
@@ -301,7 +318,7 @@ function updateLeafletTrains(movements) {
         const lat = v.location.latitude;
         const lng = v.location.longitude;
         const dest = v.direction || '?';
-        const color = getProductColor(productName, productName === 'U' ? line : null);
+        const { fillColor, borderColor } = getMarkerColors(v);
         const emoji = getProductLabel(productName);
         const delay = v.delay ? ` | +${Math.round(v.delay/60)} min` : '';
 
@@ -309,16 +326,17 @@ function updateLeafletTrains(movements) {
 
         if (leafletMarkers[id]) {
             leafletMarkers[id].marker.setLatLng([lat, lng]);
+            leafletMarkers[id].marker.setStyle({ fillColor, color: borderColor });
             leafletMarkers[id].marker.getPopup()?.setContent(popupContent);
         } else {
             // Unterschiedliche Größen nach Produkttyp
             const radius = productName === 'U' ? 10 : (productName === 'S' ? 9 : 7);
             const marker = L.circleMarker([lat, lng], {
                 radius,
-                color: 'white',
-                fillColor: color,
+                color: borderColor,   // Rand = color.fg aus API oder Fallback
+                fillColor: fillColor, // Füllung = color.bg aus API oder Fallback
                 fillOpacity: 1,
-                weight: 2
+                weight: 2.5
             }).addTo(leafletMap).bindPopup(popupContent);
 
             marker.on('click', () => marker.openPopup());
