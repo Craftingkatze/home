@@ -142,19 +142,19 @@
     <div id="leaflet-legend">
         <h4>Fahrzeugtypen</h4>
         <div class="legend-item">
-            <div class="legend-dot" style="background:#95a5a6;border:3px solid #224f86"></div> U-Bahn
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #115D91"></div> U-Bahn
         </div>
         <div class="legend-item">
-            <div class="legend-dot" style="background:#95a5a6;border:3px solid #c0392b"></div> S-Bahn
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #008D4F"></div> S-Bahn
         </div>
         <div class="legend-item">
-            <div class="legend-dot" style="background:#95a5a6;border:3px solid #e67e22"></div> Bus
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #95276E"></div> Bus
         </div>
         <div class="legend-item">
-            <div class="legend-dot" style="background:#95a5a6;border:3px solid #27ae60"></div> Tram
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #BE1414"></div> Tram
         </div>
         <div class="legend-item">
-            <div class="legend-dot" style="background:#95a5a6;border:3px solid #8e44ad"></div> Fähre
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #528DBA"></div> Fähre
         </div>
         <div class="legend-item">
             <div class="legend-dot" style="background:#95a5a6;border:3px solid #7f8c8d"></div> Sonstige
@@ -210,15 +210,19 @@ function getFallbackColor(productName, lineName) {
     }
 }
 
-// Produkttyp-Farbe für den RING (immer fix nach Verkehrsmittel)
+// Produkttyp-Farbe für den RING – offizielle BVG Kennfarben
 function getTypeColor(productName) {
     switch ((productName || '').toUpperCase()) {
-        case 'U':     return '#224f86'; // U-Bahn dunkelblau
-        case 'S':     return '#c0392b'; // S-Bahn rot
-        case 'BUS':   return '#e67e22'; // Bus orange
-        case 'TRAM':  return '#27ae60'; // Straßenbahn grün
-        case 'FERRY': return '#8e44ad'; // Fähre lila
-        default:      return '#7f8c8d'; // Grau
+        case 'U':           return '#115D91'; // Verkehrsblau  RAL 5017
+        case 'S':           return '#008D4F'; // Verkehrsgrün  RAL 6024
+        case 'BUS':         return '#95276E'; // Verkehrspurpur RAL 4006
+        case 'TRAM':        return '#BE1414'; // Verkehrsrot   RAL 3020
+        case 'FERRY':       return '#528DBA'; // Lichtblau     RAL 5012
+        case 'REGIONAL':
+        case 'REGIONAL_EXP':
+        case 'NATIONAL':
+        case 'NATIONAL_EXP': return '#BE1414'; // Bahn-Rot     RAL 3020
+        default:            return '#7f8c8d'; // Grau
     }
 }
 
