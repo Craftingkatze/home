@@ -80,6 +80,16 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
         }
 
+        /* Leaflet Legende */
+        #leaflet-legend {
+            position: absolute; top: 10px; left: 10px; z-index: 1000;
+            background: rgba(255,255,255,0.92); border-radius: 8px;
+            padding: 8px 12px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        #leaflet-legend h4 { margin: 0 0 5px; font-size: 13px; color: #2c3e50; }
+        .legend-item { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; flex-shrink: 0; }
+
         .U1{color:#7dad4c} .U2{color:#da421e} .U3{color:#16683d}
         .U4{color:#f0d722} .U5{color:#7e5330} .U6{color:#8c6dab}
         .U7{color:#009bd5} .U8{color:#224f86} .U9{color:#f3791d}
@@ -102,7 +112,7 @@
 
 <div class="refresh-info">
     Letzte Aktualisierung: <span id="last-update">–</span>
-    | Aktive Züge: <span id="train-count">0</span>
+    | Aktive Fahrzeuge: <span id="train-count">0</span>
 </div>
 
 <div id="line-toggle-container">
@@ -129,6 +139,15 @@
 <!-- Echte Karte -->
 <div id="leaflet-container">
     <div id="leaflet-map"></div>
+    <div id="leaflet-legend">
+        <h4>Fahrzeugtypen</h4>
+        <div class="legend-item"><div class="legend-dot" style="background:#224f86"></div> U-Bahn</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div> S-Bahn</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div> Bus</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div> Straßenbahn</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8e44ad"></div> Fähre</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7f8c8d"></div> Sonstige</div>
+    </div>
     <button id="locate-btn" title="Mein Standort">📍</button>
 </div>
 
@@ -155,6 +174,31 @@ const lineColors = {
     U5:'#7e5330', U6:'#8c6dab', U7:'#009bd5', U8:'#224f86',
     U9:'#f3791d', U12:'#1e05ff'
 };
+
+// Farben nach Produkttyp für die echte Karte
+function getProductColor(productName, lineName) {
+    // Erst nach Linie schauen (U-Bahn-Linien)
+    if (lineName && lineColors[lineName]) return lineColors[lineName];
+    switch ((productName || '').toUpperCase()) {
+        case 'U':     return '#224f86'; // U-Bahn blau
+        case 'S':     return '#27ae60'; // S-Bahn rot
+        case 'BUS':   return '#e67e22'; // Bus orange
+        case 'TRAM':  return '#c0392b'; // Straßenbahn grün
+        case 'FERRY': return '#8e44ad'; // Fähre lila
+        default:      return '#7f8c8d'; // Sonstige grau
+    }
+}
+
+function getProductLabel(productName) {
+    switch ((productName || '').toUpperCase()) {
+        case 'U':     return '🚇';
+        case 'S':     return '🚆';
+        case 'BUS':   return '🚌';
+        case 'TRAM':  return '🚊';
+        case 'FERRY': return '⛴';
+        default:      return '🚐';
+    }
+}
 
 let visibleLines = {U1:true,U2:true,U3:true,U4:true,U5:true,U6:true,U7:true,U8:true,U9:true,U12:true};
 
@@ -189,7 +233,7 @@ function initLeaflet() {
         attribution: '© OpenStreetMap'
     }).addTo(leafletMap);
 
-    // Stationsmarker
+    // Stationsmarker (U-Bahn)
     const linesData = {
         U1:typeof u1Points!=='undefined'?u1Points:[],
         U2:typeof u2Points!=='undefined'?u2Points:[],
@@ -235,32 +279,54 @@ function startGeoWatch() {
     }, null, {enableHighAccuracy:true});
 }
 
+// ── Alle Fahrzeuge auf der echten Karte anzeigen (keine Produktfilterung mehr)
 function updateLeafletTrains(movements) {
     if (!leafletMap) return;
     const seen = new Set();
+
     movements.forEach(v => {
-        if (!v.line || v.line.productName!=='U' || !v.location || !v.line.name) return;
+        // Nur überspringen wenn keine Positionsdaten oder keine Linie
+        if (!v.location || !v.line || !v.line.name) return;
+
         const line = v.line.name;
-        if (!visibleLines[line]) return;
-        const id = v.tripId; if (!id) return;
+        const productName = v.line?.productName || '';
+        const id = v.tripId;
+        if (!id) return;
+
+        // Für U-Bahn-Linien: Sichtbarkeits-Filter anwenden
+        if (productName === 'U' && !visibleLines[line]) return;
+
         seen.add(id);
-        const lat = v.location.latitude, lng = v.location.longitude;
+
+        const lat = v.location.latitude;
+        const lng = v.location.longitude;
         const dest = v.direction || '?';
-        const color = lineColors[line] || '#333';
+        const color = getProductColor(productName, productName === 'U' ? line : null);
+        const emoji = getProductLabel(productName);
+        const delay = v.delay ? ` | +${Math.round(v.delay/60)} min` : '';
+
+        const popupContent = `${emoji} <b>${line}</b><br>→ ${dest}${delay}`;
 
         if (leafletMarkers[id]) {
-            leafletMarkers[id].marker.setLatLng([lat,lng]);
-            leafletMarkers[id].marker.getPopup()?.setContent(`<b>${line}</b><br>→ ${dest}`);
+            leafletMarkers[id].marker.setLatLng([lat, lng]);
+            leafletMarkers[id].marker.getPopup()?.setContent(popupContent);
         } else {
-            const marker = L.circleMarker([lat,lng], {
-                radius:9, color:'white', fillColor:color, fillOpacity:1, weight:2.5
-            }).addTo(leafletMap).bindPopup(`<b>${line}</b><br>→ ${dest}`);
+            // Unterschiedliche Größen nach Produkttyp
+            const radius = productName === 'U' ? 10 : (productName === 'S' ? 9 : 7);
+            const marker = L.circleMarker([lat, lng], {
+                radius,
+                color: 'white',
+                fillColor: color,
+                fillOpacity: 1,
+                weight: 2
+            }).addTo(leafletMap).bindPopup(popupContent);
+
             marker.on('click', () => marker.openPopup());
-            leafletMarkers[id] = { marker, line };
+            leafletMarkers[id] = { marker, line, productName };
         }
     });
 
-    // Veraltete entfernen
+    // Veraltete Marker entfernen
     Object.keys(leafletMarkers).forEach(id => {
         if (!seen.has(id)) {
             leafletMap.removeLayer(leafletMarkers[id].marker);
@@ -269,16 +335,16 @@ function updateLeafletTrains(movements) {
     });
 }
 
-// Linien-Checkboxen – Leaflet-Marker zeigen/verstecken
+// Linien-Checkboxen – Leaflet-Marker zeigen/verstecken (nur U-Bahn betroffen)
 document.querySelectorAll('.line-toggle').forEach(cb => {
     cb.addEventListener('change', function() {
         const line = this.value;
         visibleLines[line] = this.checked;
         // Schematisch
         d3.selectAll(`.live-train.${line}`).style('display', this.checked ? 'inline' : 'none');
-        // Leaflet
-        Object.values(leafletMarkers).forEach(({marker, line:ml}) => {
-            if (ml === line) {
+        // Leaflet: nur U-Bahn-Marker filtern
+        Object.entries(leafletMarkers).forEach(([id, {marker, line:ml, productName}]) => {
+            if (productName === 'U' && ml === line) {
                 if (this.checked) marker.addTo(leafletMap);
                 else leafletMap?.removeLayer(marker);
             }
@@ -402,10 +468,10 @@ d3.xml("bvggrafik1a.svg").then(function(xml) {
             if (!data?.movements) return;
             const now = new Date();
 
-            // Leaflet updaten
+            // Leaflet updaten – alle Fahrzeuge
             if (currentMapMode === 'real') updateLeafletTrains(data.movements);
 
-            // Schematisch updaten
+            // Schematisch: nur U-Bahn
             const toRemove = new Set(Object.keys(liveTrains));
 
             data.movements.forEach(v => {
@@ -477,7 +543,10 @@ d3.xml("bvggrafik1a.svg").then(function(xml) {
     }
 
     function updateTrainCount() {
-        document.getElementById('train-count').textContent=existingTrainIds.size;
+        // Zählt U-Bahn (schematisch) + alle Leaflet-Fahrzeuge
+        const leafletCount = currentMapMode === 'real' ? Object.keys(leafletMarkers).length : 0;
+        const schematicCount = currentMapMode === 'schematic' ? existingTrainIds.size : 0;
+        document.getElementById('train-count').textContent = leafletCount || schematicCount;
     }
 
     // Toggle-Button
