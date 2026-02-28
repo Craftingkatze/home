@@ -141,12 +141,32 @@
     <div id="leaflet-map"></div>
     <div id="leaflet-legend">
         <h4>Fahrzeugtypen</h4>
-        <div class="legend-item"><div class="legend-dot" style="background:#224f86"></div> U-Bahn</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div> S-Bahn</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div> Bus</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div> Straßenbahn</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#8e44ad"></div> Fähre</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#7f8c8d"></div> Sonstige</div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #224f86"></div> U-Bahn
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #c0392b"></div> S-Bahn
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #e67e22"></div> Bus
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #27ae60"></div> Tram
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #8e44ad"></div> Fähre
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background:#95a5a6;border:3px solid #7f8c8d"></div> Sonstige
+        </div>
+        <hr style="margin:6px 0;border-color:#ddd">
+        <div class="legend-item">
+            <button id="toggle-stations-btn" style="
+                width:100%;padding:4px 8px;font-size:12px;cursor:pointer;
+                background:#2c3e50;color:white;border:none;border-radius:4px;">
+                🚉 Stationen ausblenden
+            </button>
+        </div>
     </div>
     <button id="locate-btn" title="Mein Standort">📍</button>
 </div>
@@ -167,6 +187,8 @@ let currentMapMode = 'schematic';
 
 let leafletMap = null;
 let leafletMarkers = {}; // id -> { marker, line }
+let stationLayers = {}; // line -> LayerGroup
+let stationsVisible = true;
 let userMarker = null;
 
 const lineColors = {
@@ -188,22 +210,33 @@ function getFallbackColor(productName, lineName) {
     }
 }
 
+// Produkttyp-Farbe für den RING (immer fix nach Verkehrsmittel)
+function getTypeColor(productName) {
+    switch ((productName || '').toUpperCase()) {
+        case 'U':     return '#224f86'; // U-Bahn dunkelblau
+        case 'S':     return '#c0392b'; // S-Bahn rot
+        case 'BUS':   return '#e67e22'; // Bus orange
+        case 'TRAM':  return '#27ae60'; // Straßenbahn grün
+        case 'FERRY': return '#8e44ad'; // Fähre lila
+        default:      return '#7f8c8d'; // Grau
+    }
+}
+
 // Gibt { fillColor, borderColor } zurück
-// fillColor  = color.bg aus API  (Innenfläche des Kreises)
-// borderColor = color.fg aus API  (Rand des Kreises)
-// Fallback: beide = getFallbackColor
+// fillColor   = color.bg aus API (Linienfarbe, Kreisfüllung) → Fallback lineColors oder Grau
+// borderColor = fixer Produkttyp-Farbe (Ring um den Kreis)
 function getMarkerColors(v) {
     const productName = v.line?.productName || '';
-    const lineName    = productName === 'U' ? v.line?.name : null;
-    const fallback    = getFallbackColor(productName, lineName);
+    const lineName    = v.line?.name || '';
 
+    // Ring = immer die Produkttyp-Farbe
+    const borderColor = getTypeColor(productName);
+
+    // Füllung = color.bg aus API, dann lineColors-Tabelle, dann Grau
     const apiBg = v.line?.color?.bg;
-    const apiFg = v.line?.color?.fg;
+    let fillColor = apiBg || lineColors[lineName] || '#95a5a6';
 
-    return {
-        fillColor:   apiBg || fallback,
-        borderColor: apiFg || fallback
-    };
+    return { fillColor, borderColor };
 }
 
 function getProductLabel(productName) {
@@ -250,7 +283,7 @@ function initLeaflet() {
         attribution: '© OpenStreetMap'
     }).addTo(leafletMap);
 
-    // Stationsmarker (U-Bahn)
+    // Stationsmarker (U-Bahn) – pro Linie eine LayerGroup
     const linesData = {
         U1:typeof u1Points!=='undefined'?u1Points:[],
         U2:typeof u2Points!=='undefined'?u2Points:[],
@@ -263,15 +296,22 @@ function initLeaflet() {
         U9:typeof u9Points!=='undefined'?u9Points:[],
         U12:typeof u12Points!=='undefined'?u12Points:[]
     };
+    stationLayers = {};
     Object.entries(linesData).forEach(([line, pts]) => {
+        const group = L.layerGroup();
         pts.forEach(p => {
             if (p.station && p.xr && p.yr) {
                 L.circleMarker([p.xr, p.yr], {
-                    radius:5, color:lineColors[line]||'#333',
-                    fillOpacity:1, weight:2
-                }).addTo(leafletMap).bindPopup(`<b>${p.station}</b><br>${line}`);
+                    radius: 5,
+                    color: lineColors[line] || '#333',
+                    fillColor: 'white',
+                    fillOpacity: 1,
+                    weight: 2
+                }).addTo(group).bindPopup(`<b>${p.station}</b><br>${line}`);
             }
         });
+        stationLayers[line] = group;
+        if (stationsVisible) group.addTo(leafletMap);
     });
 
     document.getElementById('locate-btn').addEventListener('click', () => {
@@ -280,6 +320,16 @@ function initLeaflet() {
     });
 
     startGeoWatch();
+
+    // Stationen ein-/ausblenden
+    document.getElementById('toggle-stations-btn').addEventListener('click', function() {
+        stationsVisible = !stationsVisible;
+        this.textContent = stationsVisible ? '🚉 Stationen ausblenden' : '🚉 Stationen anzeigen';
+        Object.values(stationLayers).forEach(group => {
+            if (stationsVisible) group.addTo(leafletMap);
+            else leafletMap.removeLayer(group);
+        });
+    });
 }
 
 function startGeoWatch() {
