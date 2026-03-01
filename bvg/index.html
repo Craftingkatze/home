@@ -290,11 +290,20 @@
         }
         .offset-label { font-size: 10px; color: #888; width: 14px; text-align:center; flex-shrink:0; }
         .offset-input {
-            width: 44px; padding: 2px 4px; border: 1px solid #ccc;
+            width: 38px; padding: 2px 2px; border: 1px solid #ccc;
             border-radius: 3px; font-size: 11px; text-align: center;
             background: white; color: #222;
         }
         body.dark-mode .offset-input { background: #1a2030; color: #ddd; border-color: #556; }
+        .offset-step {
+            width: 18px; height: 18px; padding: 0; border: 1px solid #bbb;
+            border-radius: 3px; font-size: 13px; line-height: 1; cursor: pointer;
+            background: #eef; color: #335; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .offset-step:hover { background: #2c3e50; color: white; border-color: #2c3e50; }
+        body.dark-mode .offset-step { background: #2a3a4a; color: #aac; border-color: #445; }
+        .offset-row { gap: 3px; }
         #offset-reset-btn {
             font-size: 11px; padding: 2px 8px; background: #c0392b;
             color: white; border: none; border-radius: 4px; cursor: pointer;
@@ -449,9 +458,13 @@ const lineOffsets = {
         row.innerHTML = `
             <span class="offset-line-badge" style="background:${col};color:${fg}">${line}</span>
             <span class="offset-label">X</span>
+            <button class="offset-step" data-line="${line}" data-axis="dx" data-delta="-1">−</button>
             <input class="offset-input" data-line="${line}" data-axis="dx" type="number" value="0" step="1">
+            <button class="offset-step" data-line="${line}" data-axis="dx" data-delta="1">+</button>
             <span class="offset-label">Y</span>
+            <button class="offset-step" data-line="${line}" data-axis="dy" data-delta="-1">−</button>
             <input class="offset-input" data-line="${line}" data-axis="dy" type="number" value="0" step="1">
+            <button class="offset-step" data-line="${line}" data-axis="dy" data-delta="1">+</button>
         `;
         grid.appendChild(row);
     });
@@ -461,25 +474,29 @@ const lineOffsets = {
         if (!inp.classList.contains('offset-input')) return;
         const line = inp.dataset.line;
         const axis = inp.dataset.axis;
-        const val  = parseInt(inp.value) || 0;
-        lineOffsets[line][axis] = val;
-        // Alle Züge dieser Linie sofort neu positionieren
-        document.querySelectorAll(`[data-train-id^="${line}_"]`).forEach(el => {
-            const tid = el.getAttribute('data-train-id');
-            const td  = liveTrains[tid];
-            if (!td) return;
-            el.setAttribute('x', td.x + lineOffsets[line].dx);
-            el.setAttribute('y', td.y + lineOffsets[line].dy);
-        });
+        lineOffsets[line][axis] = parseInt(inp.value) || 0;
+        applyOffsetToLine(line);
+    });
+
+    grid.addEventListener('click', e => {
+        const btn = e.target.closest('.offset-step');
+        if (!btn) return;
+        const line  = btn.dataset.line;
+        const axis  = btn.dataset.axis;
+        const delta = parseInt(btn.dataset.delta);
+        lineOffsets[line][axis] += delta;
+        // Update matching input display
+        const inp = grid.querySelector(
+            `.offset-input[data-line="${line}"][data-axis="${axis}"]`
+        );
+        if (inp) inp.value = lineOffsets[line][axis];
+        applyOffsetToLine(line);
     });
 
     document.getElementById('offset-reset-btn').addEventListener('click', () => {
         Object.keys(lineOffsets).forEach(l => { lineOffsets[l].dx = 0; lineOffsets[l].dy = 0; });
         document.querySelectorAll('.offset-input').forEach(inp => inp.value = 0);
-        // Alle Züge zurücksetzen
-        Object.entries(liveTrains).forEach(([uid, td]) => {
-            td.element?.attr('x', td.x).attr('y', td.y);
-        });
+        Object.keys(lineOffsets).forEach(l => applyOffsetToLine(l));
     });
 
     document.getElementById('offset-editor-toggle').addEventListener('click', function() {
@@ -489,6 +506,18 @@ const lineOffsets = {
         this.classList.toggle('active', !open);
     });
 })();
+
+// Alle Züge einer Linie sofort mit aktuellem Offset neu positionieren
+function applyOffsetToLine(line) {
+    const ox = lineOffsets[line]?.dx || 0;
+    const oy = lineOffsets[line]?.dy || 0;
+    // Iteriere über liveTrains (hat korrekte x/y Basiswerte)
+    Object.entries(liveTrains).forEach(([uid, td]) => {
+        if (td.line !== line) return;
+        const el = td.element?.node ? td.element.node() : null;
+        if (el) el.setAttribute('transform', `translate(${td.x + ox}, ${td.y + oy})`);
+    });
+}
 
 function getBgColor(v) {
     const pn   = (v.line?.productName || '').toUpperCase();
