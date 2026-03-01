@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BVG Berlin – Live</title>
+    <title>BVG Berlin – Live | Vin(i)cent</title>
+    <link rel="icon" type="image/png" href="/CC v2-1grau (1) - Kopie.png">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="trainRoutes.js"></script>
+    <script src="/bvg/trainRoutes.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="/style.css">
     <style>
+        /* ── Overrides & BVG-spezifische Styles ── */
         * { box-sizing: border-box; }
 
-        body {
-            font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0;
-            background: #f4f7f6; color: #2c3e50; transition: background .3s, color .3s;
-        }
         body.dark-mode { background: #0f1117; color: #e0e0e0; }
         body.dark-mode #svg-container { background: #1a1a2e; }
         body.dark-mode #svg-container svg { border-color: #333; }
@@ -26,45 +25,87 @@
         body.dark-mode .refresh-info { color: #999; }
         body.dark-mode #line-toggle-container label { color: #ccc; }
 
-        h1 { color: inherit; margin: 12px 0 4px; font-size: 1.4em; }
+        /* ── Tracker-Wrapper ── */
+        #bvg-wrapper {
+            width: 96%;
+            max-width: 1400px;
+            margin: 0 auto 40px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        body.dark-mode #bvg-wrapper { background: #1a1a2e; }
+
+        #bvg-wrapper h1 {
+            color: inherit;
+            margin: 0 0 12px;
+            font-size: 1.4em;
+        }
 
         .controls {
-            margin: 6px 0; display: flex; flex-wrap: wrap;
-            justify-content: center; gap: 6px; padding: 0 10px;
+            margin: 6px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 10px;
         }
+
         .control-button {
-            padding: 7px 14px; background: #2c3e50; color: white;
-            border: none; border-radius: 5px; cursor: pointer; font-size: 14px;
+            padding: 7px 14px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
         }
         .control-button:hover { background: #3d5166; }
         .control-button.active { background: #c0392b; }
 
         #map-mode-toggle {
-            display: inline-flex; border-radius: 5px; overflow: hidden; border: 2px solid #2c3e50;
+            display: inline-flex;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 2px solid #2c3e50;
         }
         #map-mode-toggle button {
-            padding: 7px 14px; border: none; cursor: pointer;
-            font-size: 14px; background: white; color: #2c3e50; transition: background .2s, color .2s;
+            padding: 7px 14px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            background: white;
+            color: #2c3e50;
+            transition: background .2s, color .2s;
         }
         #map-mode-toggle button.active { background: #2c3e50; color: white; }
 
         .refresh-info { font-size: 13px; color: #666; margin: 3px 0 6px; }
 
         #line-toggle-container {
-            margin: 2px 0 8px; display: flex; flex-wrap: wrap;
-            justify-content: center; gap: 5px; padding: 0 10px;
+            margin: 2px 0 8px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            padding: 0 10px;
         }
         #line-toggle-container label { font-size: 13px; cursor: pointer; }
 
-        /* ── SVG-Container & Vollbild ─────────────────────────────────────── */
+        /* ── SVG-Container ── */
         #svg-container {
-            overflow: hidden; width: 100%; background: white; position: relative;
-            /* Kein fester height – SVG bestimmt die Höhe */
+            overflow: hidden;
+            width: 100%;
+            background: white;
+            position: relative;
+            border-radius: 6px;
         }
-        #svg-container svg { border: 1px solid #ccc; width: 100%; display: block; }
+        #svg-container svg { border: 1px solid #ccc; width: 100%; display: block; border-radius: 6px; }
         body.dark-mode #svg-container { background: #1a1a2e; }
 
-        /* Im Vollbild: Container füllt alles, SVG füllt Container */
         #svg-container:fullscreen,
         #svg-container:-webkit-full-screen,
         #svg-container:-moz-full-screen {
@@ -76,9 +117,7 @@
             flex-direction: column;
         }
         body.dark-mode #svg-container:fullscreen,
-        body.dark-mode #svg-container:-webkit-full-screen {
-            background-color: #1a1a2e;
-        }
+        body.dark-mode #svg-container:-webkit-full-screen { background-color: #1a1a2e; }
         #svg-container:fullscreen svg,
         #svg-container:-webkit-full-screen svg,
         #svg-container:-moz-full-screen svg {
@@ -89,91 +128,148 @@
         }
         ::backdrop { background-color: white; }
 
-        /* ── Zoom-Buttons ────────────────────────────────────────────────── */
-        /* Normal: fixed am rechten Rand */
+        /* ── Zoom-Buttons ── */
         #zoom-controls {
-            position: fixed; bottom: 20px; right: 20px;
-            display: flex; flex-direction: column; gap: 6px; z-index: 999;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 999;
         }
-        /* Vollbild: absolute innerhalb des Containers */
         #svg-container:fullscreen #zoom-controls,
         #svg-container:-webkit-full-screen #zoom-controls,
         #svg-container:-moz-full-screen #zoom-controls {
-            position: absolute; bottom: 20px; right: 20px;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
         }
         .zoom-btn {
-            width: 38px; height: 38px; font-size: 22px;
-            background: #2c3e50; color: white; border: none; border-radius: 6px;
-            cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
+            width: 38px;
+            height: 38px;
+            font-size: 22px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
         }
         .zoom-btn:hover { background: #3d5166; }
 
-        /* ── Leaflet ─────────────────────────────────────────────────────── */
-        #leaflet-container { display: none; width: 100%; height: 85vh; position: relative; overflow: hidden; }
-        #leaflet-map { width: 100%; height: 100%; }
+        /* ── Leaflet ── */
+        #leaflet-container { display: none; width: 100%; height: 85vh; position: relative; overflow: hidden; border-radius: 6px; }
+        #leaflet-map { width: 100%; height: 100%; border-radius: 6px; }
 
         .vbb-marker {
-            display: inline-flex; align-items: center;
-            padding: 2px 8px; border-radius: 12px;
-            font-size: 11px; font-weight: 900;
-            white-space: nowrap; cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 900;
+            white-space: nowrap;
+            cursor: pointer;
             box-shadow: 0 1px 5px rgba(0,0,0,0.35);
             border: 1.5px solid rgba(255,255,255,0.55);
-            line-height: 1.4; user-select: none;
+            line-height: 1.4;
+            user-select: none;
             transition: transform 0.12s, box-shadow 0.12s;
             letter-spacing: 0.04em;
         }
-        .vbb-marker:hover {
-            transform: scale(1.18); box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 9999 !important;
-        }
+        .vbb-marker:hover { transform: scale(1.18); box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 9999 !important; }
 
         #leaflet-legend {
-            position: absolute; top: 10px; left: 10px; z-index: 1000;
-            background: rgba(255,255,255,0.95); border-radius: 8px;
-            padding: 10px 13px; font-size: 12px; color: #333;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.2); border: 1px solid #ddd;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            border-radius: 8px;
+            padding: 10px 13px;
+            font-size: 12px;
+            color: #333;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            border: 1px solid #ddd;
         }
         #leaflet-legend h4 { margin: 0 0 7px; font-size: 13px; color: #111; }
         .legend-item { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
         .legend-pill {
-            padding: 1px 8px; border-radius: 9px; font-size: 11px;
-            font-weight: 900; color: white; border: 1.5px solid rgba(0,0,0,0.15);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2); letter-spacing: 0.03em;
+            padding: 1px 8px;
+            border-radius: 9px;
+            font-size: 11px;
+            font-weight: 900;
+            color: white;
+            border: 1.5px solid rgba(0,0,0,0.15);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            letter-spacing: 0.03em;
         }
         body.dark-mode #leaflet-legend { background: rgba(22,28,38,0.95); color: #ddd; border-color: #333; }
         body.dark-mode #leaflet-legend h4 { color: #fff; }
 
         #locate-btn {
-            position: absolute; bottom: 80px; right: 10px; z-index: 1000;
-            background: #2c3e50; color: white; border: none; border-radius: 50%;
-            width: 44px; height: 44px; font-size: 20px; cursor: pointer;
+            position: absolute;
+            bottom: 80px;
+            right: 10px;
+            z-index: 1000;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+            cursor: pointer;
             box-shadow: 0 3px 8px rgba(0,0,0,0.5);
         }
         #locate-btn:hover { background: #3d5166; }
 
         #stop-tracking-btn {
-            position: absolute; bottom: 30px; right: 10px; z-index: 1001;
-            background: #c0392b; color: white; border: none; border-radius: 6px;
-            padding: 8px 12px; font-size: 12px; cursor: pointer; display: none;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4); white-space: nowrap;
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            z-index: 1001;
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            white-space: nowrap;
         }
         #stop-tracking-btn:hover { background: #a93226; }
 
-        /* ── Perlenschnur-Panel ───────────────────────────────────────────── */
+        /* ── Perlenschnur-Panel ── */
         #stop-sequence-panel {
-            position: absolute; top: 0; right: 0; bottom: 0; z-index: 1000;
-            width: 260px; background: rgba(255,255,255,0.97);
-            border-left: 1px solid #ddd; overflow-y: auto;
-            transform: translateX(100%); transition: transform .3s ease;
-            display: flex; flex-direction: column;
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            z-index: 1000;
+            width: 260px;
+            background: rgba(255,255,255,0.97);
+            border-left: 1px solid #ddd;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform .3s ease;
+            display: flex;
+            flex-direction: column;
         }
         #stop-sequence-panel.open { transform: translateX(0); }
         body.dark-mode #stop-sequence-panel { background: rgba(18,24,34,0.98); border-color: #333; }
         #ssp-header {
-            padding: 12px 14px 8px; border-bottom: 1px solid #eee;
-            display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+            padding: 12px 14px 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
         }
         body.dark-mode #ssp-header { border-color: #333; }
         #ssp-line-badge { padding: 3px 10px; border-radius: 10px; font-weight: 900; font-size: 14px; letter-spacing: .04em; }
@@ -203,10 +299,19 @@
         .ssp-delay-neg { color: #27ae60; font-weight: bold; }
 
         #tracking-badge {
-            position: absolute; top: 10px; right: 10px; z-index: 1002;
-            background: #c0392b; color: white; border-radius: 20px;
-            padding: 5px 12px; font-size: 12px; font-weight: bold;
-            display: none; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1002;
+            background: #c0392b;
+            color: white;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             animation: pulse-badge 2s infinite;
         }
         @keyframes pulse-badge {
@@ -214,32 +319,42 @@
             50%      { box-shadow: 0 2px 16px rgba(192,57,43,0.8); }
         }
 
-        /* ── Hover-Tooltip ───────────────────────────────────────────────── */
+        /* ── Hover-Tooltip ── */
         .stationinfo {
-            position: fixed; background: rgba(255,255,255,0.97); color: #222;
-            padding: 7px 12px; border-radius: 6px; pointer-events: none;
-            font-size: 13px; z-index: 9999; max-width: 240px;
+            position: fixed;
+            background: rgba(255,255,255,0.97);
+            color: #222;
+            padding: 7px 12px;
+            border-radius: 6px;
+            pointer-events: none;
+            font-size: 13px;
+            z-index: 9999;
+            max-width: 240px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-            border-left: 3px solid #f3791d; border: 1px solid #ddd;
+            border-left: 3px solid #f3791d;
+            border: 1px solid #ddd;
         }
         body.dark-mode .stationinfo { background: rgba(22,28,38,0.97); color: white; border-color: #444; }
 
-        /* ── Schematisches Detail-Popup ──────────────────────────────────── */
+        /* ── Schematisches Detail-Popup ── */
         #schematic-popup-overlay {
             display: none;
-            position: fixed; inset: 0; z-index: 10000;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
             background: rgba(0,0,0,0.35);
             backdrop-filter: blur(2px);
-            align-items: center; justify-content: center;
+            align-items: center;
+            justify-content: center;
         }
-        #schematic-popup-overlay.visible {
-            display: flex;
-        }
+        #schematic-popup-overlay.visible { display: flex; }
         #schematic-popup {
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.28);
-            min-width: 280px; max-width: 340px; width: 90vw;
+            min-width: 280px;
+            max-width: 340px;
+            width: 90vw;
             overflow: hidden;
             font-family: Arial, sans-serif;
             font-size: 13px;
@@ -252,61 +367,72 @@
         }
         body.dark-mode #schematic-popup { background: #1a2232; color: #ddd; }
         #schematic-popup-close {
-            position: absolute; top: 8px; right: 10px;
-            background: none; border: none; font-size: 20px;
-            cursor: pointer; color: rgba(255,255,255,0.7); z-index: 1;
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: rgba(255,255,255,0.7);
+            z-index: 1;
             line-height: 1;
         }
         #schematic-popup-close:hover { color: #fff; }
         #schematic-popup-header {
             padding: 12px 16px 10px;
-            display: flex; align-items: center; gap: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         #schematic-popup-badge {
-            padding: 4px 12px; border-radius: 10px;
-            font-weight: 900; font-size: 16px; letter-spacing: .04em;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-weight: 900;
+            font-size: 16px;
+            letter-spacing: .04em;
             flex-shrink: 0;
         }
         #schematic-popup-dest {
-            font-weight: bold; font-size: 13px; flex: 1;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            font-weight: bold;
+            font-size: 13px;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             color: rgba(255,255,255,0.9);
         }
         #schematic-popup-delay {
-            font-size: 11px; opacity: .85; flex-shrink: 0; font-weight: 600;
+            font-size: 11px;
+            opacity: .85;
+            flex-shrink: 0;
+            font-weight: 600;
         }
         #schematic-popup-body { padding: 12px 16px 14px; }
-        #schematic-popup-next {
-            font-size: 12px; color: #666; margin-bottom: 10px;
-        }
+        #schematic-popup-next { font-size: 12px; color: #666; margin-bottom: 10px; }
         body.dark-mode #schematic-popup-next { color: #aaa; }
         #schematic-popup-next strong { color: #222; }
         body.dark-mode #schematic-popup-next strong { color: #fff; }
         .popup-btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
         .popup-btn {
-            flex: 1; padding: 8px 6px; border: none; border-radius: 7px;
-            cursor: pointer; font-size: 12px; font-weight: 700;
+            flex: 1;
+            padding: 8px 6px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
             transition: opacity .15s;
         }
         .popup-btn:hover { opacity: .85; }
-        #schematic-popup-stops {
-            border-top: 1px solid #eee; padding-top: 10px;
-        }
+        #schematic-popup-stops { border-top: 1px solid #eee; padding-top: 10px; }
         body.dark-mode #schematic-popup-stops { border-color: #2a3a4a; }
-        .popup-stop-row {
-            display: flex; align-items: center; gap: 8px;
-            padding: 5px 0; font-size: 12px;
-        }
-        .popup-stop-label {
-            font-size: 9px; text-transform: uppercase; letter-spacing: .06em;
-            color: #999; width: 68px; flex-shrink: 0; text-align: right;
-        }
+        .popup-stop-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; }
+        .popup-stop-label { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: #999; width: 68px; flex-shrink: 0; text-align: right; }
         .popup-stop-name { font-weight: 600; flex: 1; color: #222; }
         body.dark-mode .popup-stop-name { color: #ddd; }
         .popup-stop-time { font-size: 11px; color: #888; flex-shrink: 0; }
-        .popup-loading {
-            text-align: center; color: #999; padding: 12px 0; font-size: 12px;
-        }
+        .popup-loading { text-align: center; color: #999; padding: 12px 0; font-size: 12px; }
         .popup-error { text-align: center; color: #c0392b; padding: 8px 0; font-size: 12px; }
 
         .U1{color:#7dad4c} .U2{color:#da421e} .U3{color:#16683d}
@@ -317,99 +443,127 @@
 </head>
 <body>
 
-<h1>BVG Berlin – Live U-Bahn Tracker</h1>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/wetter">Wetter App</a>
+        <a href="/twitch">Twitch App</a>
+        <a href="/server">Scuffed Attack</a>
+        <a href="/flags">Flags</a>
+        <a href="/bvg/">Public Transport</a>
+    </nav>
 
-<div class="controls">
-    <button id="toggle-live" class="control-button active">Live-Daten deaktivieren</button>
-    <button id="refresh-data" class="control-button">Aktualisieren</button>
-    <button id="fullscreen-toggle" class="control-button">Vollbild</button>
-    <button id="darkmode-toggle" class="control-button">🌙 Dark Mode</button>
-    <div id="map-mode-toggle">
-        <button id="mode-schematic" class="active">🗺 Schematisch</button>
-        <button id="mode-real">🛰 Echte Karte</button>
-    </div>
-</div>
+    <header>
+        <h1>BVG Berlin – Live U-Bahn Tracker</h1>
+        <a href="/" target="_self">
+            <img src="/CC v2-1grau (1) - Kopie.png" alt="Craftingkatze Logo" class="logo" draggable="false">
+        </a>
+    </header>
 
-<div class="refresh-info">
-    Letzte Aktualisierung: <span id="last-update">–</span>
-    | Aktive Fahrzeuge: <span id="train-count">0</span>
-</div>
+    <main>
+        <div id="bvg-wrapper">
 
-<div id="line-toggle-container">
-    <label><input type="checkbox" class="line-toggle" value="U1" checked> U1</label>
-    <label><input type="checkbox" class="line-toggle" value="U2" checked> U2</label>
-    <label><input type="checkbox" class="line-toggle" value="U3" checked> U3</label>
-    <label><input type="checkbox" class="line-toggle" value="U4" checked> U4</label>
-    <label><input type="checkbox" class="line-toggle" value="U5" checked> U5</label>
-    <label><input type="checkbox" class="line-toggle" value="U6" checked> U6</label>
-    <label><input type="checkbox" class="line-toggle" value="U7" checked> U7</label>
-    <label><input type="checkbox" class="line-toggle" value="U8" checked> U8</label>
-    <label><input type="checkbox" class="line-toggle" value="U9" checked> U9</label>
-</div>
-
-<!-- Schematische Karte -->
-<div id="svg-container">
-    <div id="zoom-controls">
-        <button class="zoom-btn" id="zoom-in">+</button>
-        <button class="zoom-btn" id="zoom-reset" style="font-size:13px;">⌂</button>
-        <button class="zoom-btn" id="zoom-out">−</button>
-    </div>
-</div>
-
-<!-- Echte Karte -->
-<div id="leaflet-container">
-    <div id="leaflet-map"></div>
-    <div id="leaflet-legend">
-        <h4>Fahrzeugtypen</h4>
-        <div class="legend-item"><span class="legend-pill" style="background:#115D91">U7</span> U-Bahn</div>
-        <div class="legend-item"><span class="legend-pill" style="background:#008D4F">S3</span> S-Bahn</div>
-        <div class="legend-item"><span class="legend-pill" style="background:#BE1414">M10</span> Tram</div>
-        <div class="legend-item"><span class="legend-pill" style="background:#95276E">247</span> Bus</div>
-        <div class="legend-item"><span class="legend-pill" style="background:#528DBA">F10</span> Fähre</div>
-        <hr style="margin:7px 0;border-color:#444">
-        <div class="legend-item">
-            <button id="toggle-stations-btn" style="width:100%;padding:4px 8px;font-size:11px;cursor:pointer;background:#2c3e50;color:white;border:none;border-radius:4px;">
-                🚉 Stationen ausblenden
-            </button>
-        </div>
-    </div>
-    <button id="locate-btn" title="Mein Standort">📍</button>
-    <button id="stop-tracking-btn">✕ Tracking beenden</button>
-    <div id="tracking-badge" title="Tracking aktiv – klicken zum Beenden">⊙ Tracking</div>
-    <div id="stop-sequence-panel">
-        <div id="ssp-header">
-            <span id="ssp-line-badge">–</span>
-            <span id="ssp-title">Stationsverlauf</span>
-            <button id="ssp-close">×</button>
-        </div>
-        <div id="ssp-stops"></div>
-    </div>
-</div>
-
-<!-- Hover-Tooltip -->
-<div id="stationinfo" class="stationinfo" style="display:none;"></div>
-
-<!-- Verbessertes Popup für Schematische Karte -->
-<div id="schematic-popup-overlay">
-    <div id="schematic-popup">
-        <button id="schematic-popup-close">×</button>
-        <div id="schematic-popup-header">
-            <span id="schematic-popup-badge"></span>
-            <span id="schematic-popup-dest"></span>
-            <span id="schematic-popup-delay"></span>
-        </div>
-        <div id="schematic-popup-body">
-            <div id="schematic-popup-next"></div>
-            <div class="popup-btn-row">
-                <button class="popup-btn" id="popup-btn-track" style="background:#2c3e50;color:white;">⊙ Verfolgen</button>
-                <button class="popup-btn" id="popup-btn-route" style="background:#27ae60;color:white;">≡ Route & Halte</button>
+            <div class="controls">
+                <button id="toggle-live" class="control-button active">Live-Daten deaktivieren</button>
+                <button id="refresh-data" class="control-button">Aktualisieren</button>
+                <button id="fullscreen-toggle" class="control-button">Vollbild</button>
+                <button id="darkmode-toggle" class="control-button">Dark Mode</button>
+                <div id="map-mode-toggle">
+                    <button id="mode-schematic" class="active">Schematisch</button>
+                    <button id="mode-real">Echte Karte</button>
+                </div>
             </div>
-            <div id="schematic-popup-stops">
-                <div class="popup-loading">Lade Halteinfos…</div>
+
+            <div class="refresh-info">
+                Letzte Aktualisierung: <span id="last-update">–</span>
+                | Aktive Fahrzeuge: <span id="train-count">0</span>
+            </div>
+
+            <div id="line-toggle-container">
+                <label><input type="checkbox" class="line-toggle" value="U1" checked> U1</label>
+                <label><input type="checkbox" class="line-toggle" value="U2" checked> U2</label>
+                <label><input type="checkbox" class="line-toggle" value="U3" checked> U3</label>
+                <label><input type="checkbox" class="line-toggle" value="U4" checked> U4</label>
+                <label><input type="checkbox" class="line-toggle" value="U5" checked> U5</label>
+                <label><input type="checkbox" class="line-toggle" value="U6" checked> U6</label>
+                <label><input type="checkbox" class="line-toggle" value="U7" checked> U7</label>
+                <label><input type="checkbox" class="line-toggle" value="U8" checked> U8</label>
+                <label><input type="checkbox" class="line-toggle" value="U9" checked> U9</label>
+            </div>
+
+            <!-- Schematische Karte -->
+            <div id="svg-container">
+                <div id="zoom-controls">
+                    <button class="zoom-btn" id="zoom-in">+</button>
+                    <button class="zoom-btn" id="zoom-reset" style="font-size:13px;">H</button>
+                    <button class="zoom-btn" id="zoom-out">−</button>
+                </div>
+            </div>
+
+            <!-- Echte Karte -->
+            <div id="leaflet-container">
+                <div id="leaflet-map"></div>
+                <div id="leaflet-legend">
+                    <h4>Fahrzeugtypen</h4>
+                    <div class="legend-item"><span class="legend-pill" style="background:#115D91">U7</span> U-Bahn</div>
+                    <div class="legend-item"><span class="legend-pill" style="background:#008D4F">S3</span> S-Bahn</div>
+                    <div class="legend-item"><span class="legend-pill" style="background:#BE1414">M10</span> Tram</div>
+                    <div class="legend-item"><span class="legend-pill" style="background:#95276E">247</span> Bus</div>
+                    <div class="legend-item"><span class="legend-pill" style="background:#528DBA">F10</span> Faehre</div>
+                    <hr style="margin:7px 0;border-color:#444">
+                    <div class="legend-item">
+                        <button id="toggle-stations-btn" style="width:100%;padding:4px 8px;font-size:11px;cursor:pointer;background:#2c3e50;color:white;border:none;border-radius:4px;">
+                            Stationen ausblenden
+                        </button>
+                    </div>
+                </div>
+                <button id="locate-btn" title="Mein Standort">Standort</button>
+                <button id="stop-tracking-btn">Tracking beenden</button>
+                <div id="tracking-badge" title="Tracking aktiv – klicken zum Beenden">Tracking</div>
+                <div id="stop-sequence-panel">
+                    <div id="ssp-header">
+                        <span id="ssp-line-badge">–</span>
+                        <span id="ssp-title">Stationsverlauf</span>
+                        <button id="ssp-close">×</button>
+                    </div>
+                    <div id="ssp-stops"></div>
+                </div>
+            </div>
+
+        </div><!-- /#bvg-wrapper -->
+    </main>
+
+    <!-- Hover-Tooltip -->
+    <div id="stationinfo" class="stationinfo" style="display:none;"></div>
+
+    <!-- Popup für Schematische Karte -->
+    <div id="schematic-popup-overlay">
+        <div id="schematic-popup">
+            <button id="schematic-popup-close">×</button>
+            <div id="schematic-popup-header">
+                <span id="schematic-popup-badge"></span>
+                <span id="schematic-popup-dest"></span>
+                <span id="schematic-popup-delay"></span>
+            </div>
+            <div id="schematic-popup-body">
+                <div id="schematic-popup-next"></div>
+                <div class="popup-btn-row">
+                    <button class="popup-btn" id="popup-btn-track" style="background:#2c3e50;color:white;">Verfolgen</button>
+                    <button class="popup-btn" id="popup-btn-route" style="background:#27ae60;color:white;">Route & Halte</button>
+                </div>
+                <div id="schematic-popup-stops">
+                    <div class="popup-loading">Lade Halteinfos…</div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <hr>
+    <br>
+    <div class="footer">
+        <a href="/imp">Impressum</a>
+        <a href="/Datenschutzerklaerung">Datenschutzerklarung</a>
+    </div>
+    <br>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
@@ -477,7 +631,7 @@ let isDarkMode=false, lightTileLayer=null, darkTileLayer=null;
 document.getElementById('darkmode-toggle').addEventListener('click', function() {
     isDarkMode=!isDarkMode;
     document.body.classList.toggle('dark-mode',isDarkMode);
-    this.textContent=isDarkMode?'☀️ Light Mode':'🌙 Dark Mode';
+    this.textContent=isDarkMode?'Light Mode':'Dark Mode';
     this.classList.toggle('active',isDarkMode);
     if (leafletMap) {
         if (isDarkMode){if(lightTileLayer)leafletMap.removeLayer(lightTileLayer);if(!darkTileLayer)darkTileLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM contributors © CARTO',subdomains:'abcd',maxZoom:19});darkTileLayer.addTo(leafletMap);}
@@ -517,7 +671,7 @@ function initLeaflet() {
         pts.forEach(p=>{if(!p.station||!p.xr||!p.yr)return;L.circleMarker([p.xr,p.yr],{radius:4,color:lineColors[line]||'#aaa',fillColor:'#ffffff',fillOpacity:1,weight:2}).addTo(group).bindPopup(`<div style="font-family:Arial;font-size:13px"><b>${p.station}</b><br><span style="color:${lineColors[line]};font-weight:800">${line}</span></div>`);});
         stationLayers[line]=group; if(stationsVisible)group.addTo(leafletMap);
     });
-    document.getElementById('toggle-stations-btn').addEventListener('click',function(){stationsVisible=!stationsVisible;this.textContent=stationsVisible?'🚉 Stationen ausblenden':'🚉 Stationen anzeigen';Object.values(stationLayers).forEach(g=>stationsVisible?g.addTo(leafletMap):leafletMap.removeLayer(g));});
+    document.getElementById('toggle-stations-btn').addEventListener('click',function(){stationsVisible=!stationsVisible;this.textContent=stationsVisible?'Stationen ausblenden':'Stationen anzeigen';Object.values(stationLayers).forEach(g=>stationsVisible?g.addTo(leafletMap):leafletMap.removeLayer(g));});
     document.getElementById('locate-btn').addEventListener('click',()=>{if(userMarker)leafletMap.setView(userMarker.getLatLng(),15,{animate:true});else navigator.geolocation?.getCurrentPosition(p=>leafletMap.setView([p.coords.latitude,p.coords.longitude],15,{animate:true}));});
     startGeoWatch();
 }
@@ -526,7 +680,7 @@ function startGeoWatch() {
     navigator.geolocation.watchPosition(pos=>{
         const{latitude:lat,longitude:lng}=pos.coords;
         const icon=L.divIcon({html:'<div style="width:12px;height:12px;background:#e74c3c;border-radius:50%;border:2px solid white;box-shadow:0 0 8px rgba(231,76,60,0.9)"></div>',className:'',iconSize:[12,12],iconAnchor:[6,6]});
-        if(!userMarker)userMarker=L.marker([lat,lng],{icon}).addTo(leafletMap).bindPopup('📍 Dein Standort');
+        if(!userMarker)userMarker=L.marker([lat,lng],{icon}).addTo(leafletMap).bindPopup('Dein Standort');
         else userMarker.setLatLng([lat,lng]);
     },null,{enableHighAccuracy:true});
 }
@@ -565,8 +719,8 @@ function buildLeafletPopupHtml(line, dest, bg, fg, delayMin, tripId, isTracking,
         <div style="padding:10px 12px">
             ${dest?`<div style="margin-bottom:8px;font-weight:600;color:#444">→ ${dest}</div>`:''}
             <div style="display:flex;gap:6px;margin-bottom:10px">
-                <button onclick="toggleTracking('${tripId}')" style="flex:1;padding:6px 4px;border:none;border-radius:6px;cursor:pointer;font-size:11px;background:${isTracking?'#c0392b':'#2c3e50'};color:white;font-weight:700">${isTracking?'✕ Stop':'⊙ Verfolgen'}</button>
-                <button onclick="toggleRouteAndPanel('${tripId}','${line}','${bg}','${fg}')" style="flex:1;padding:6px 4px;border:none;border-radius:6px;cursor:pointer;font-size:11px;background:#27ae60;color:white;font-weight:700">≡ Route & Halte</button>
+                <button onclick="toggleTracking('${tripId}')" style="flex:1;padding:6px 4px;border:none;border-radius:6px;cursor:pointer;font-size:11px;background:${isTracking?'#c0392b':'#2c3e50'};color:white;font-weight:700">${isTracking?'Stop':'Verfolgen'}</button>
+                <button onclick="toggleRouteAndPanel('${tripId}','${line}','${bg}','${fg}')" style="flex:1;padding:6px 4px;border:none;border-radius:6px;cursor:pointer;font-size:11px;background:#27ae60;color:white;font-weight:700">Route & Halte</button>
             </div>
             ${prevStop||nextStop ? `<hr style="border:none;border-top:1px solid #eee;margin:0 0 8px">` : ''}
             ${prevStop?`
@@ -579,7 +733,7 @@ function buildLeafletPopupHtml(line, dest, bg, fg, delayMin, tripId, isTracking,
             </div>`:''}
             ${nextStop?`
             <div style="display:flex;gap:8px;align-items:flex-start">
-                <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#f3791d;width:52px;padding-top:2px;text-align:right;flex-shrink:0;font-weight:700">Nächste</div>
+                <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#f3791d;width:52px;padding-top:2px;text-align:right;flex-shrink:0;font-weight:700">Naechste</div>
                 <div>
                     <div style="font-weight:700;color:#222">${nextStop.name}</div>
                     <div style="font-size:11px;color:#888">${fmtTime(nextStop.dep,nextStop.delay)}</div>
@@ -619,7 +773,7 @@ function toggleTracking(tripId){
 function startTracking(tripId){
     trackedTripId=tripId; const info=leafletMarkers[tripId];
     document.getElementById('tracking-badge').style.display='block';
-    document.getElementById('tracking-badge').textContent=`⊙ ${info?.line||''} wird verfolgt`;
+    document.getElementById('tracking-badge').textContent=`${info?.line||''} wird verfolgt`;
     document.getElementById('stop-tracking-btn').style.display='block';
     if(info?.marker&&leafletMap)leafletMap.setView(info.marker.getLatLng(),14,{animate:true});
 }
@@ -714,7 +868,6 @@ function showPopup(uid, td) {
     const delayMin = td.movement?.delay ? Math.round(td.movement.delay/60) : 0;
     const delayStr = delayMin > 0 ? `+${delayMin} Min` : delayMin < 0 ? `${delayMin} Min` : null;
 
-    // Header einfärben
     const header = document.getElementById('schematic-popup-header');
     header.style.background = bg;
     header.style.color = fg;
@@ -726,10 +879,8 @@ function showPopup(uid, td) {
     popupDelay.textContent = delayStr ? delayStr : '';
     popupDelay.style.display = delayStr ? '' : 'none';
 
-    // Nächste Station
-    popupNext.innerHTML = `<span style="color:#999;font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Nächste Station</span><br><strong>${td.nextStation || '?'}</strong>`;
+    popupNext.innerHTML = `<span style="color:#999;font-size:11px;text-transform:uppercase;letter-spacing:.05em;">Naechste Station</span><br><strong>${td.nextStation || '?'}</strong>`;
 
-    // Buttons konfigurieren
     popupBtnTrack.onclick = () => {
         closePopup();
         switchMode('real');
@@ -747,7 +898,6 @@ function showPopup(uid, td) {
         }, 400);
     };
 
-    // Halteinfos zurücksetzen und laden
     popupStops.innerHTML = '<div class="popup-loading">Lade Halteinfos…</div>';
     popupOverlay.classList.add('visible');
 
@@ -755,7 +905,6 @@ function showPopup(uid, td) {
 }
 
 async function fetchPopupDetails(tripId, line, dest, bg) {
-    // Nur wenn das Popup noch für diesen Zug offen ist
     const currentUid = popupCurrentUid;
     try {
         let stopovers = tripStopoverCache[tripId];
@@ -764,7 +913,6 @@ async function fetchPopupDetails(tripId, line, dest, bg) {
             const data = await res.json(); const trip = data.trip||data;
             stopovers = trip.stopovers||[]; tripStopoverCache[tripId] = stopovers;
         }
-        // Popup evtl. schon wieder geschlossen
         if (popupCurrentUid !== currentUid) return;
 
         const now = Date.now(); let prevIdx=-1, nextIdx=-1;
@@ -777,15 +925,13 @@ async function fetchPopupDetails(tripId, line, dest, bg) {
         const prevStop = prevIdx>=0?stopovers[prevIdx]:null;
         const nextStop = nextIdx>=0?stopovers[nextIdx]:null;
 
-        // Popup nochmal aktualisieren
         const td = Object.values(liveTrains).find(t => t.tripId===tripId);
         if (td) {
             popupNext.innerHTML = nextStop
-                ? `<span style="color:#f3791d;font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Nächster Halt</span><br><strong>${nextStop.stop?.name||'?'}</strong>`
+                ? `<span style="color:#f3791d;font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Naechster Halt</span><br><strong>${nextStop.stop?.name||'?'}</strong>`
                 : `<span style="color:#999;font-size:11px">Endstation erreicht</span>`;
         }
 
-        // Prev + Next Halte-Karten
         popupStops.innerHTML = '';
 
         if (prevStop) {
@@ -803,13 +949,12 @@ async function fetchPopupDetails(tripId, line, dest, bg) {
             card.style.borderTop = prevStop ? `1px solid #f0f0f0` : '';
             card.style.paddingTop = prevStop ? '6px' : '';
             card.innerHTML = `
-                <div class="popup-stop-label" style="color:${bg};font-weight:700">Nächste</div>
+                <div class="popup-stop-label" style="color:${bg};font-weight:700">Naechste</div>
                 <div class="popup-stop-name" style="font-weight:700">${nextStop.stop?.name||'?'}</div>
                 <div class="popup-stop-time">${fmtTime(nextStop.departure||nextStop.arrival, nextStop.departureDelay||nextStop.arrivalDelay||0)}</div>`;
             popupStops.appendChild(card);
         }
 
-        // Kurzübersicht der Stationen (5 vor und 5 nach aktuellem)
         const start = Math.max(0, nextIdx-3), end = Math.min(stopovers.length, nextIdx+5);
         const mini = document.createElement('div');
         mini.style.cssText = 'margin-top:10px;border-top:1px solid #eee;padding-top:8px;';
@@ -820,7 +965,6 @@ async function fetchPopupDetails(tripId, line, dest, bg) {
             const name = s.stop?.name||'?';
             if (name.toLowerCase().includes('zwischen')) continue;
             const isPast = i < nextIdx;
-            const isCurr = i === nextIdx-1;
             const isNext = i === nextIdx;
             const row = document.createElement('div');
             row.style.cssText = `display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px;color:${isPast?'#bbb':isNext?bg:'#444'};font-weight:${isNext?'700':'400'};`;
@@ -837,7 +981,7 @@ async function fetchPopupDetails(tripId, line, dest, bg) {
 
     } catch(e) {
         if (popupCurrentUid === currentUid) {
-            popupStops.innerHTML = '<div class="popup-error">Details nicht verfügbar</div>';
+            popupStops.innerHTML = '<div class="popup-error">Details nicht verfuegbar</div>';
         }
     }
 }
@@ -862,7 +1006,6 @@ d3.xml("bvggrafik1c.svg").then(function(xml) {
     while(svgNode.firstChild)zoomGroup.appendChild(svgNode.firstChild);
     svgNode.appendChild(zoomGroup);
 
-    // SVG nimmt im Normal-Modus 90vh, im Vollbild 100% des Containers
     svg.style("width","100%").style("height","90vh").style("display","block");
 
     fitToScreen=function(){
@@ -876,7 +1019,6 @@ d3.xml("bvggrafik1c.svg").then(function(xml) {
     setTimeout(fitToScreen,50);
     window.addEventListener("resize",fitToScreen);
 
-    // Vollbild: SVG-Höhe auf 100% umschalten damit kein weißer Balken entsteht
     document.addEventListener("fullscreenchange",()=>{
         if(document.fullscreenElement){
             svg.style("height","100%");
@@ -890,7 +1032,6 @@ d3.xml("bvggrafik1c.svg").then(function(xml) {
     document.getElementById("zoom-out").addEventListener("click",()=>svg.transition().duration(250).call(zoomBehavior.scaleBy,1/1.5));
     document.getElementById("zoom-reset").addEventListener("click",fitToScreen);
 
-    // ── Liniendaten
     const allLines = {
         U1:typeof u1Points!=='undefined'?u1Points:[], U2:typeof u2Points!=='undefined'?u2Points:[],
         U3:typeof u3Points!=='undefined'?u3Points:[], U4:typeof u4Points!=='undefined'?u4Points:[],
@@ -970,10 +1111,9 @@ d3.xml("bvggrafik1c.svg").then(function(xml) {
                             prev.element.attr("transform",`translate(${np.x+ox},${np.y+oy})`);
                             setArrowAngle(prev.element.node(),angle);
                         }
-                        // Popup aktualisieren falls dieser Zug gerade angezeigt wird
                         if(popupCurrentUid===uid){
                             const pdoc=document.getElementById('schematic-popup-next');
-                            if(pdoc&&nextStation)pdoc.innerHTML=`<span style="color:#f3791d;font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Nächster Halt</span><br><strong>${nextStation}</strong>`;
+                            if(pdoc&&nextStation)pdoc.innerHTML=`<span style="color:#f3791d;font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Naechster Halt</span><br><strong>${nextStation}</strong>`;
                         }
                         liveTrains[uid]={...prev,ptIdx:npIdx,x:np.x,y:np.y,lastUpdated:now,nextStation,dir,apiDirection:v.direction||prev.apiDirection||'',movement:v};
                     }else{
@@ -1020,7 +1160,7 @@ d3.xml("bvggrafik1c.svg").then(function(xml) {
 
                         g.addEventListener("mouseenter",()=>{
                             const td=liveTrains[uid],ns=td?.nextStation||"Unbekannt";
-                            stationinfo.style("display","block").html(`<strong>${line}</strong><br>→ ${td?.apiDirection||'?'}`+(ns==="ENDE"?"<br>Fahrt endet hier":`<br>Nächste: ${ns}`));
+                            stationinfo.style("display","block").html(`<strong>${line}</strong><br>→ ${td?.apiDirection||'?'}`+(ns==="ENDE"?"<br>Fahrt endet hier":`<br>Naechste: ${ns}`));
                         });
                         g.addEventListener("mousemove",e=>stationinfo.style("left",(e.clientX+12)+"px").style("top",(e.clientY+12)+"px"));
                         g.addEventListener("mouseleave",()=>stationinfo.style("display","none"));
