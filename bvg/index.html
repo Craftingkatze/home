@@ -272,9 +272,9 @@
         }
         body.dark-mode #offset-editor h4 { color: #eee; }
         .offset-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
         .offset-row {
             display: flex; align-items: center; gap: 4px;
@@ -458,19 +458,12 @@ const lineOffsets = {
         row.innerHTML = `
             <span class="offset-line-badge" style="background:${col};color:${fg}">${line}</span>
             <span class="offset-label">X</span>
-            <br>
             <button class="offset-step" data-line="${line}" data-axis="dx" data-delta="-1">−</button>
-            <br>
             <input class="offset-input" data-line="${line}" data-axis="dx" type="number" value="0" step="1">
-            <br>
             <button class="offset-step" data-line="${line}" data-axis="dx" data-delta="1">+</button>
-            <br>
             <span class="offset-label">Y</span>
-            <br>
             <button class="offset-step" data-line="${line}" data-axis="dy" data-delta="-1">−</button>
-            <br>
             <input class="offset-input" data-line="${line}" data-axis="dy" type="number" value="0" step="1">
-            <br>
             <button class="offset-step" data-line="${line}" data-axis="dy" data-delta="1">+</button>
         `;
         grid.appendChild(row);
