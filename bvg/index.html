@@ -378,10 +378,11 @@ const lineColors = {
 
 // Pixel-Offsets für Schematische Karte (x = rechts+, y = unten+)
 const lineOffsets = {
-    U1:{dx:9,dy:8}, U2:{dx:9,dy:8}, U3:{dx:9,dy:8}, U4:{dx:9,dy:8},
-    U5:{dx:9,dy:8}, U6:{dx:9,dy:8}, U7:{dx:9,dy:8}, U8:{dx:37.5,dy:8},
-    U9:{dx:9,dy:8}, U12:{dx:9,dy:8}
+    U1:{dx:8.8,dy:8.2}, U2:{dx:8.8,dy:8.2}, U3:{dx:8.8,dy:8.2}, U4:{dx:8.8,dy:8.2},
+    U5:{dx:8.8,dy:8.2}, U6:{dx:8.8,dy:8.2}, U7:{dx:8.8,dy:8.2}, U8:{dx:37.5,dy:8.2},
+    U9:{dx:8.8,dy:8.2}, U12:{dx:8.8,dy:8.2}
 };
+
 
 
 
@@ -429,7 +430,7 @@ let darkTileLayer  = null;
 document.getElementById('darkmode-toggle').addEventListener('click', function() {
     isDarkMode = !isDarkMode;
     document.body.classList.toggle('dark-mode', isDarkMode);
-    this.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+    this.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
     this.classList.toggle('active', isDarkMode);
     if (leafletMap) {
         if (isDarkMode) {
