@@ -458,12 +458,19 @@ const lineOffsets = {
         row.innerHTML = `
             <span class="offset-line-badge" style="background:${col};color:${fg}">${line}</span>
             <span class="offset-label">X</span>
+            <br>
             <button class="offset-step" data-line="${line}" data-axis="dx" data-delta="-1">−</button>
+            <br>
             <input class="offset-input" data-line="${line}" data-axis="dx" type="number" value="0" step="1">
+            <br>
             <button class="offset-step" data-line="${line}" data-axis="dx" data-delta="1">+</button>
+            <br>
             <span class="offset-label">Y</span>
+            <br>
             <button class="offset-step" data-line="${line}" data-axis="dy" data-delta="-1">−</button>
+            <br>
             <input class="offset-input" data-line="${line}" data-axis="dy" type="number" value="0" step="1">
+            <br>
             <button class="offset-step" data-line="${line}" data-axis="dy" data-delta="1">+</button>
         `;
         grid.appendChild(row);
