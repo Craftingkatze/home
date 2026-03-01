@@ -12,7 +12,7 @@
 <body>
    <nav>
       	  	<a href="/"  >Home</a>
-      	 	<a href="wetter">Wetter App</a> <!-- Added link to the weather app -->
+      	 	<a href="wetter">Wetter App</a>
          	<a href="twitch">Twitch App</a>
             <a href="server">Scuffed Attack</a>
             <a href="/bvg/">Public Transport</a>
@@ -65,10 +65,12 @@
     </div>
 
     <script>
-        // Verbesserte API-Konfiguration
+        // API-Konfiguration – restcountries.com als primäre, zuverlässige API
         const API_CONFIG = {
-            baseUrl: 'https://countriesnow.space/api/v0.1/countries',
-            fallbackUrl: 'https://restcountries.com/v3.1/all'
+            // v3.1 all – gibt name.common + flags.png zurück
+            primaryUrl: 'https://restcountries.com/v3.1/all?fields=name,flags',
+            // v2 als Fallback (ältere, aber oft gecachte Endpunkte)
+            fallbackUrl: 'https://restcountries.com/v2/all'
         };
 
         // Quiz-Konfiguration
@@ -136,45 +138,87 @@
         // API-Funktionen
         async function fetchCountries() {
             let countries = [];
-            let retries = 0;
 
-            while (retries < QUIZ_CONFIG.maxRetries && countries.length === 0) {
+            // Versuch 1: restcountries.com v3.1
+            try {
+                const response = await fetch(API_CONFIG.primaryUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                countries = data
+                    .filter(c => c.flags && (c.flags.png || c.flags.svg) && c.name && c.name.common)
+                    .map(c => ({
+                        name: c.name.common,
+                        flag: c.flags.png || c.flags.svg
+                    }));
+            } catch (err) {
+                console.warn('Primäre API (v3.1) fehlgeschlagen:', err);
+            }
+
+            // Versuch 2: restcountries.com v2 als Fallback
+            if (countries.length === 0) {
                 try {
-                    // Primäre API
-                    const response = await fetch(`${API_CONFIG.baseUrl}/flag/images`);
+                    const response = await fetch(API_CONFIG.fallbackUrl);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
-                    
-                    if (data.data && data.data.length > 0) {
-                        countries = data.data.map(country => ({
-                            name: country.name,
-                            flag: country.flag
-                        })).filter(country => country.flag);
-                    }
-                } catch (error) {
-                    console.warn('Primäre API fehlgeschlagen, versuche Fallback:', error);
-                }
 
-                if (countries.length === 0) {
-                    // Fallback-API
-                    try {
-                        const fallbackResponse = await fetch(API_CONFIG.fallbackUrl);
-                        const fallbackData = await fallbackResponse.json();
-                        countries = fallbackData.map(country => ({
-                            name: country.name.common,
-                            flag: country.flags.png
-                        })).filter(country => country.flag);
-                    } catch (fallbackError) {
-                        console.error('Fallback API fehlgeschlagen:', fallbackError);
-                    }
-                }
-                
-                retries++;
-                if (countries.length === 0 && retries < QUIZ_CONFIG.maxRetries) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    countries = data
+                        .filter(c => c.flag && c.name)
+                        .map(c => ({
+                            name: c.name,
+                            flag: c.flag   // v2 liefert direkt eine Flag-Emoji-URL, aber auch flag png via flags.png
+                        }));
+                } catch (err) {
+                    console.warn('Fallback API (v2) fehlgeschlagen:', err);
                 }
             }
 
+            // Versuch 3: Flaggen-CDN über flagcdn.com mit bekannten ISO-Codes
+            if (countries.length === 0) {
+                console.warn('Beide APIs fehlgeschlagen – verwende eingebettetes Fallback-Dataset');
+                countries = getHardcodedCountries();
+            }
+
             return countries;
+        }
+
+        // Hardcodiertes Fallback-Dataset mit flagcdn.com (läuft ohne externe API)
+        function getHardcodedCountries() {
+            const data = [
+                ['Germany','de'],['France','fr'],['Italy','it'],['Spain','es'],
+                ['Portugal','pt'],['Netherlands','nl'],['Belgium','be'],['Austria','at'],
+                ['Switzerland','ch'],['Poland','pl'],['Sweden','se'],['Norway','no'],
+                ['Denmark','dk'],['Finland','fi'],['Greece','gr'],['Turkey','tr'],
+                ['Russia','ru'],['Ukraine','ua'],['Czech Republic','cz'],['Hungary','hu'],
+                ['Romania','ro'],['Bulgaria','bg'],['Croatia','hr'],['Serbia','rs'],
+                ['United States','us'],['Canada','ca'],['Mexico','mx'],['Brazil','br'],
+                ['Argentina','ar'],['Chile','cl'],['Colombia','co'],['Peru','pe'],
+                ['Venezuela','ve'],['Bolivia','bo'],['Ecuador','ec'],['Uruguay','uy'],
+                ['Paraguay','py'],['Cuba','cu'],['Jamaica','jm'],['Haiti','ht'],
+                ['China','cn'],['Japan','jp'],['South Korea','kr'],['India','in'],
+                ['Pakistan','pk'],['Bangladesh','bd'],['Indonesia','id'],['Vietnam','vn'],
+                ['Thailand','th'],['Malaysia','my'],['Philippines','ph'],['Singapore','sg'],
+                ['Myanmar','mm'],['Cambodia','kh'],['Laos','la'],['Mongolia','mn'],
+                ['Nepal','np'],['Sri Lanka','lk'],['Afghanistan','af'],['Iran','ir'],
+                ['Iraq','iq'],['Saudi Arabia','sa'],['United Arab Emirates','ae'],
+                ['Israel','il'],['Jordan','jo'],['Lebanon','lb'],['Syria','sy'],
+                ['Yemen','ye'],['Oman','om'],['Qatar','qa'],['Kuwait','kw'],['Bahrain','bh'],
+                ['Egypt','eg'],['Libya','ly'],['Tunisia','tn'],['Algeria','dz'],['Morocco','ma'],
+                ['Sudan','sd'],['Ethiopia','et'],['Kenya','ke'],['Tanzania','tz'],
+                ['Uganda','ug'],['Rwanda','rw'],['Nigeria','ng'],['Ghana','gh'],
+                ['Ivory Coast','ci'],['Senegal','sn'],['Cameroon','cm'],['Zimbabwe','zw'],
+                ['South Africa','za'],['Mozambique','mz'],['Angola','ao'],['Somalia','so'],
+                ['Australia','au'],['New Zealand','nz'],['Papua New Guinea','pg'],['Fiji','fj'],
+                ['United Kingdom','gb'],['Ireland','ie'],['Iceland','is'],['Luxembourg','lu'],
+                ['Slovakia','sk'],['Slovenia','si'],['Lithuania','lt'],['Latvia','lv'],['Estonia','ee'],
+                ['Belarus','by'],['Moldova','md'],['Albania','al'],['North Macedonia','mk'],
+                ['Kosovo','xk'],['Bosnia and Herzegovina','ba'],['Montenegro','me'],
+                ['Kazakhstan','kz'],['Uzbekistan','uz'],['Georgia','ge'],['Armenia','am'],['Azerbaijan','az']
+            ];
+            return data.map(([name, code]) => ({
+                name,
+                flag: `https://flagcdn.com/w320/${code}.png`
+            }));
         }
 
         // Quiz-Funktionen
@@ -182,18 +226,17 @@
             showLoadingState();
             
             try {
-                quizState.countries = await fetchCountries();
+                let allCountries = await fetchCountries();
                 
-                if (quizState.countries.length === 0) {
+                if (allCountries.length === 0) {
                     throw new Error('Keine Länderdaten verfügbar');
                 }
 
-                // Begrenze die Anzahl der Fragen
-                if (quizState.countries.length > QUIZ_CONFIG.totalQuestions) {
-                    quizState.countries = quizState.countries
-                        .sort(() => Math.random() - 0.5)
-                        .slice(0, QUIZ_CONFIG.totalQuestions);
-                }
+                // Zufällige Auswahl von totalQuestions Ländern
+                allCountries = allCountries.sort(() => Math.random() - 0.5);
+                quizState.countries = allCountries.slice(0, QUIZ_CONFIG.totalQuestions);
+                // Alle Länder für Options-Generierung behalten
+                quizState.allCountries = allCountries;
 
                 startQuiz();
             } catch (error) {
@@ -208,9 +251,8 @@
             startTimer();
             showNextQuestion();
             
-            // Event Listener
             elements.finishBtn.addEventListener('click', finishQuiz);
-            elements.skipBtn.addEventListener('click', skipQuestion);
+            if (elements.skipBtn) elements.skipBtn.addEventListener('click', skipQuestion);
         }
 
         function showNextQuestion() {
@@ -231,17 +273,17 @@
             elements.options.innerHTML = '';
             const options = new Set([correctAnswer]);
 
-            // Zufällige Optionen generieren
-            while (options.size < QUIZ_CONFIG.optionsPerQuestion) {
-                const randomCountry = quizState.countries[
-                    Math.floor(Math.random() * quizState.countries.length)
-                ];
+            // Zufällige Optionen aus allen Ländern generieren (nicht nur Quiz-Länder)
+            const pool = quizState.allCountries || quizState.countries;
+            let attempts = 0;
+            while (options.size < QUIZ_CONFIG.optionsPerQuestion && attempts < 200) {
+                const randomCountry = pool[Math.floor(Math.random() * pool.length)];
                 if (randomCountry.name !== correctAnswer) {
                     options.add(randomCountry.name);
                 }
+                attempts++;
             }
 
-            // Optionen mischen und anzeigen
             const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
             
             shuffledOptions.forEach(option => {
@@ -271,7 +313,6 @@
                     selected: selectedButton.textContent
                 });
                 
-                // Richtige Antwort markieren
                 allButtons.forEach(btn => {
                     if (btn.textContent === correctAnswer) {
                         btn.classList.add('highlight-correct');
