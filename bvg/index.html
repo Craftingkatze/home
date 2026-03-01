@@ -632,7 +632,8 @@ d3.xml("bvggrafik1a.svg").then(function(xml) {
                     // Schematische Karte
                     const path = line === "U12" ? "u12punkt1.svg" : `${line.toLowerCase()}punkt1.svg`;
                     d3.xml(path).then(tx => {
-                        const train = svg.node().appendChild(tx.documentElement);
+                        // In zoomGroup einfügen, damit Zoom/Pan mitmacht!
+                        const train = zoomGroup.appendChild(tx.documentElement);
                         const bb = train.getBBox(), sc = 0.5;
                         train.setAttribute("width",  bb.width * sc);
                         train.setAttribute("height", bb.height * sc);
